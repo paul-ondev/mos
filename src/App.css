@@ -12,3 +12,13 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
+
+.divider {
+  padding-top: 1vh;
+  padding-bottom: 1vh;
+
+  width: 100%;
+  height: 2vh;
+  background-color: #282c34;
+
+}
