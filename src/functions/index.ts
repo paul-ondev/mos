@@ -1,3 +1,5 @@
+import { diag, round } from "mathjs";
+
 export const toMins = (dgr: number, mins: number): number => {
   return dgr * 60 + mins;
 };
@@ -65,7 +67,7 @@ export const deltaUMatrix = (
   return [dU1, dU2, dU3, dU4];
 };
 
-export function AMatrix(
+export function createAMatrix(
   firstDeltaLatAndDeparture: number[],
   secondDeltaLatAndDeparture: number[],
   thirdDeltaLatAndDeparture: number[],
@@ -85,3 +87,9 @@ export function AMatrix(
   );
   return resultArr;
 }
+
+export const createInverseD_Matrix = () => {
+  let matrixElement = 1 / dgrToRadians(0.2) ** 2;
+  matrixElement = round(matrixElement, 8);
+  return diag([matrixElement, matrixElement, matrixElement, matrixElement]);
+};

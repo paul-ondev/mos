@@ -13,7 +13,8 @@ import { styled } from "@mui/material/styles";
 import Card from "@mui/material/Card";
 import Button from "@mui/material/Button";
 import {
-  AMatrix,
+  createAMatrix,
+  createInverseD_Matrix,
   deltaUMatrix,
   departureDiff,
   dgrToRadians,
@@ -113,7 +114,8 @@ function App() {
     console.log(data);
   };
 
-  AMatrix([4, 8], [6, 4.3], [7.7, -3.1], [-1.4, 5.9]);
+  let a = createInverseD_Matrix();
+  console.log(a);
 
   return (
     <div className="App">
