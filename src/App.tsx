@@ -13,6 +13,7 @@ import { styled } from "@mui/material/styles";
 import Card from "@mui/material/Card";
 import Button from "@mui/material/Button";
 import {
+  AMatrix,
   deltaUMatrix,
   departureDiff,
   dgrToRadians,
@@ -112,15 +113,7 @@ function App() {
     console.log(data);
   };
 
-  console.log(
-    "delta U",
-    deltaUMatrix(
-      [dgrToRadians(25.7), 0.34],
-      [dgrToRadians(50), 1],
-      [dgrToRadians(180), 3],
-      [dgrToRadians(90), 1.6]
-    )
-  );
+  AMatrix([4, 8], [6, 4.3], [7.7, -3.1], [-1.4, 5.9]);
 
   return (
     <div className="App">

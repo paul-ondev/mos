@@ -14,7 +14,12 @@ const Item = styled(Paper)(({ theme }) => ({
   color: theme.palette.text.secondary,
 }));
 
-const NavItem = ({ number, register }) => {
+interface NavItemParam {
+  number: number;
+  register: any;
+}
+
+const NavItem = ({ number, register }: NavItemParam) => {
   let actualNumber = number + 1;
   return (
     <div>
