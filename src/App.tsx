@@ -12,6 +12,13 @@ import { styled } from "@mui/material/styles";
 
 import Card from "@mui/material/Card";
 import Button from "@mui/material/Button";
+import {
+  deltaUMatrix,
+  departureDiff,
+  dgrToRadians,
+  DRBearing,
+  latDiff,
+} from "./functions";
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -101,9 +108,19 @@ function App() {
 
   const { register, handleSubmit } = useForm();
 
-  const onSubmit = (data) => {
+  const onSubmit = (data: any) => {
     console.log(data);
   };
+
+  console.log(
+    "delta U",
+    deltaUMatrix(
+      [dgrToRadians(25.7), 0.34],
+      [dgrToRadians(50), 1],
+      [dgrToRadians(180), 3],
+      [dgrToRadians(90), 1.6]
+    )
+  );
 
   return (
     <div className="App">
