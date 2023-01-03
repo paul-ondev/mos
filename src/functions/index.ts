@@ -1,4 +1,4 @@
-import { diag, round } from "mathjs";
+import { diag, multiply, round, transpose } from "mathjs";
 
 export const toMins = (dgr: number, mins: number): number => {
   return dgr * 60 + mins;
@@ -68,10 +68,10 @@ export const deltaUMatrix = (
 };
 
 export function createAMatrix(
-  firstDeltaLatAndDeparture: number[],
-  secondDeltaLatAndDeparture: number[],
-  thirdDeltaLatAndDeparture: number[],
-  fourthDeltaLatAndDeparture: number[]
+  firstDepartureAndDeltaLat: number[],
+  secondDepartureAndDeltaLat: number[],
+  thirdDepartureAndDeltaLat: number[],
+  fourthDepartureAndDeltaLat: number[]
 ) {
   //отшествие и разность широт
   let resultArr: number[][] = [];
@@ -88,8 +88,15 @@ export function createAMatrix(
   return resultArr;
 }
 
-export const createInverseD_Matrix = () => {
+export const createInvertedD_Matrix = () => {
   let matrixElement = 1 / dgrToRadians(0.2) ** 2;
   matrixElement = round(matrixElement, 8);
   return diag([matrixElement, matrixElement, matrixElement, matrixElement]);
+};
+
+export const multiplyTransposedA_MatrixAndInvertedD_Matrix = (
+  A_Matrix: number[][],
+  invertedD_Matrix: number[][] | math.Matrix
+) => {
+  return multiply(transpose(A_Matrix), invertedD_Matrix);
 };

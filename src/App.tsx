@@ -14,12 +14,13 @@ import Card from "@mui/material/Card";
 import Button from "@mui/material/Button";
 import {
   createAMatrix,
-  createInverseD_Matrix,
+  createInvertedD_Matrix,
   deltaUMatrix,
   departureDiff,
   dgrToRadians,
   DRBearing,
   latDiff,
+  multiplyTransposedA_MatrixAndInvertedD_Matrix,
 } from "./functions";
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -113,9 +114,13 @@ function App() {
   const onSubmit = (data: any) => {
     console.log(data);
   };
+  let a = createInvertedD_Matrix();
+  let b = multiplyTransposedA_MatrixAndInvertedD_Matrix(
+    createAMatrix([4, 8], [6, 4.3], [7.7, -3.1], [-1.4, 5.9]),
+    a
+  );
 
-  let a = createInverseD_Matrix();
-  console.log(a);
+  console.log(a, b);
 
   return (
     <div className="App">
