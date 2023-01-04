@@ -15,12 +15,16 @@ import Button from "@mui/material/Button";
 import {
   createAMatrix,
   createInvertedD_Matrix,
-  deltaUMatrix,
+  createDeltaUMatrix,
   departureDiff,
   dgrToRadians,
   DRBearing,
+  findN_matrix,
   latDiff,
   multiplyTransposedA_MatrixAndInvertedD_Matrix,
+  multiplyTransposedA_MatrixAndInvertedD_MatrixOnDeltaU_Matrix,
+  createDeltaX_Matrix,
+  calculateCompassError,
 } from "./functions";
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -114,13 +118,24 @@ function App() {
   const onSubmit = (data: any) => {
     console.log(data);
   };
-  let a = createInvertedD_Matrix();
-  let b = multiplyTransposedA_MatrixAndInvertedD_Matrix(
-    createAMatrix([4, 8], [6, 4.3], [7.7, -3.1], [-1.4, 5.9]),
-    a
+  let dU_Matrix = createDeltaUMatrix(
+    [dgrToRadians(29.9), DRBearing(4, 8)],
+    [dgrToRadians(56.9), DRBearing(6, 4.3)],
+    [dgrToRadians(115.2), DRBearing(7.7, -3.1)],
+    [dgrToRadians(349.4), DRBearing(-1.4, 5.9)]
   );
+  let a = createInvertedD_Matrix();
+  let A_Matrix = createAMatrix([4, 8], [6, 4.3], [7.7, -3.1], [-1.4, 5.9]);
+  let AD_matrix = multiplyTransposedA_MatrixAndInvertedD_Matrix(A_Matrix, a);
+  let N_Matrix = findN_matrix(AD_matrix, A_Matrix);
+  let ADU_Matrix = multiplyTransposedA_MatrixAndInvertedD_MatrixOnDeltaU_Matrix(
+    AD_matrix,
+    dU_Matrix
+  );
+  let deltaX_Matrix = createDeltaX_Matrix(N_Matrix, ADU_Matrix);
+  let compassError = calculateCompassError(deltaX_Matrix);
 
-  console.log(a, b);
+  console.log(compassError);
 
   return (
     <div className="App">

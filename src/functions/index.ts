@@ -1,4 +1,15 @@
-import { diag, multiply, round, transpose } from "mathjs";
+import {
+  column,
+  diag,
+  inv,
+  map,
+  MathType,
+  Matrix,
+  multiply,
+  round,
+  row,
+  transpose,
+} from "mathjs";
 
 export const toMins = (dgr: number, mins: number): number => {
   return dgr * 60 + mins;
@@ -31,6 +42,10 @@ export const dgrToRadians = (dgr: number) => {
   return dgr * (Math.PI / 180);
 };
 
+export const radiansToDgr = (rad: number) => {
+  return rad * (180 / Math.PI);
+};
+
 export const departureDiff = (
   observedLong: longParam,
   DRlong: longParam,
@@ -49,11 +64,21 @@ export const departureDiff = (
   );
 };
 
-export const DRBearing = (departureDiff: number, latDiff: number) => {
-  return Math.atan(departureDiff / latDiff);
+export const DRBearing = (departureDiff: number, latDiff: number): number => {
+  let bearing_quarter = Math.atan(departureDiff / latDiff);
+  if (departureDiff > 0) {
+    return bearing_quarter > 0 ? bearing_quarter : bearing_quarter + Math.PI;
+  }
+  if (departureDiff < 0) {
+    return bearing_quarter > 0
+      ? bearing_quarter + Math.PI
+      : bearing_quarter + 2 * Math.PI;
+  }
+  console.log("ERROR");
+  return 1;
 };
 
-export const deltaUMatrix = (
+export const createDeltaUMatrix = (
   firstArr: number[],
   secondArr: number[],
   thirdArr: number[],
@@ -64,7 +89,10 @@ export const deltaUMatrix = (
   let dU2 = secondArr[0] - secondArr[1];
   let dU3 = thirdArr[0] - thirdArr[1];
   let dU4 = fourthArr[0] - fourthArr[1];
-  return [dU1, dU2, dU3, dU4];
+  // return [dU1, dU2, dU3, dU4];
+  return map([dU1, dU2, dU3, dU4], (i) => {
+    return i;
+  });
 };
 
 export function createAMatrix(
@@ -99,4 +127,31 @@ export const multiplyTransposedA_MatrixAndInvertedD_Matrix = (
   invertedD_Matrix: number[][] | math.Matrix
 ) => {
   return multiply(transpose(A_Matrix), invertedD_Matrix);
+};
+
+export const findN_matrix = (
+  transposedA_MatrixAndInvertedD_Matrix: any,
+  A_Matrix: number[][] | math.Matrix
+) => {
+  return inv(multiply(transposedA_MatrixAndInvertedD_Matrix, A_Matrix));
+};
+
+export const multiplyTransposedA_MatrixAndInvertedD_MatrixOnDeltaU_Matrix = (
+  transposedA_MatrixAndInvertedD_Matrix: math.MathType,
+  dU: number[]
+) => {
+  return multiply(transposedA_MatrixAndInvertedD_Matrix, dU);
+};
+
+export const createDeltaX_Matrix = (
+  N_Matrix: math.Matrix,
+  // Doesn't work either way!!!
+  ADU_Matrix: math.Matrix | MathType | number | number[]
+) => {
+  return multiply(N_Matrix, ADU_Matrix);
+};
+
+// problems with types' assigning
+export const calculateCompassError = (deltaX_Matrix: any) => {
+  return radiansToDgr(deltaX_Matrix[2]);
 };
