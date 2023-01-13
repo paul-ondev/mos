@@ -66,6 +66,7 @@ export const departureDiff = (
 
 export const DRBearing = (departureDiff: number, latDiff: number): number => {
   let bearing_quarter = Math.atan(departureDiff / latDiff);
+
   if (departureDiff > 0) {
     return bearing_quarter > 0 ? bearing_quarter : bearing_quarter + Math.PI;
   }
@@ -74,8 +75,8 @@ export const DRBearing = (departureDiff: number, latDiff: number): number => {
       ? bearing_quarter + Math.PI
       : bearing_quarter + 2 * Math.PI;
   }
-  console.log("ERROR");
-  return 1;
+  console.log("ERROR departureDiff nan");
+  return NaN;
 };
 
 export const createDeltaUMatrix = (

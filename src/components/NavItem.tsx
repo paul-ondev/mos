@@ -34,8 +34,10 @@ const NavItem = ({ number, register }: NavItemParam) => {
         <Grid item xs={3}>
           <Item>
             <TextField
-              {...register(actualNumber + `LatDGR`, { required: true })}
-              name={actualNumber + `LatDGR`}
+              {...register("orientNumber" + actualNumber + `LatDGR`, {
+                required: true,
+              })}
+              name={"orientNumber" + actualNumber + `LatDGR`}
               label="Градусы"
               variant="outlined"
             />
@@ -44,8 +46,10 @@ const NavItem = ({ number, register }: NavItemParam) => {
         <Grid item xs={3}>
           <Item>
             <TextField
-              {...register(actualNumber + `LatMins`, { required: true })}
-              name={actualNumber + "LatMins"}
+              {...register("orientNumber" + actualNumber + `LatMins`, {
+                required: true,
+              })}
+              name={"orientNumber" + actualNumber + "LatMins"}
               label="Минуты"
               variant="outlined"
             />
@@ -54,8 +58,10 @@ const NavItem = ({ number, register }: NavItemParam) => {
         <Grid item xs={3}>
           <Item>
             <TextField
-              {...register(actualNumber + `LatDir`, { required: true })}
-              name={actualNumber + "LatDir"}
+              {...register("orientNumber" + actualNumber + `LatDir`, {
+                required: true,
+              })}
+              name={"orientNumber" + actualNumber + "LatDir"}
               label="Наименование"
               variant="outlined"
             />
@@ -68,8 +74,10 @@ const NavItem = ({ number, register }: NavItemParam) => {
         <Grid item xs={3}>
           <Item>
             <TextField
-              {...register(actualNumber + `LongDGR`, { required: true })}
-              name={actualNumber + `LongDGR`}
+              {...register("orientNumber" + actualNumber + `LongDGR`, {
+                required: true,
+              })}
+              name={"orientNumber" + actualNumber + `LongDGR`}
               label="Градусы"
               variant="outlined"
             />
@@ -78,8 +86,10 @@ const NavItem = ({ number, register }: NavItemParam) => {
         <Grid item xs={3}>
           <Item>
             <TextField
-              {...register(actualNumber + `LongMins`, { required: true })}
-              name={actualNumber + "LongMins"}
+              {...register("orientNumber" + actualNumber + `LongMins`, {
+                required: true,
+              })}
+              name={"orientNumber" + actualNumber + "LongMins"}
               label="Минуты"
               variant="outlined"
             />
@@ -88,8 +98,10 @@ const NavItem = ({ number, register }: NavItemParam) => {
         <Grid item xs={3}>
           <Item>
             <TextField
-              {...register(actualNumber + `LongDir`, { required: true })}
-              name={actualNumber + "LongDir"}
+              {...register("orientNumber" + actualNumber + `LongDir`, {
+                required: true,
+              })}
+              name={"orientNumber" + actualNumber + "LongDir"}
               label="Наименование"
               variant="outlined"
             />
@@ -102,8 +114,10 @@ const NavItem = ({ number, register }: NavItemParam) => {
         <Grid item xs={6}>
           <Item>
             <TextField
-              {...register(actualNumber + `LatBearing`, { required: true })}
-              name={actualNumber + "LatBearing"}
+              {...register("orientNumber" + actualNumber + `Bearing`, {
+                required: true,
+              })}
+              name={"orientNumber" + actualNumber + "Bearing"}
               label="Градусы"
               variant="outlined"
             />
