@@ -1,4 +1,3 @@
-import classNames from "classnames";
 import React from "react";
 
 import "./ImageWithValue.css";
@@ -8,14 +7,14 @@ import Matrix from "./../Matrix";
 type Props = {
   imageUrl: string;
   oneDimensionArr?: number[];
-  matrixBorder?: boolean;
+  withoutMatrixBorder?: boolean;
   twoDimensionArray?: number[][];
 };
 
 export default function ImageWithValue({
   imageUrl,
   oneDimensionArr,
-  matrixBorder,
+  withoutMatrixBorder,
   twoDimensionArray,
 }: Props) {
   return (
@@ -25,7 +24,7 @@ export default function ImageWithValue({
       </div>
       <Matrix
         oneDimensionArr={oneDimensionArr}
-        matrixBorder={matrixBorder}
+        withoutMatrixBorder={withoutMatrixBorder}
         twoDimensionArray={twoDimensionArray}
       />
     </div>

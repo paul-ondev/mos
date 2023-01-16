@@ -1,16 +1,17 @@
 .value {
   margin: 20px 0;
   padding: 20px 10px;
+  border-left: 4px solid black;
+  border-right: 4px solid black;
+  border-radius: 20px;
 }
 .value td {
   padding-bottom: 10px;
   padding-right: 10px;
 }
 
-.matrixBorder {
-  border-left: 4px solid black;
-  border-right: 4px solid black;
-  border-radius: 20px;
+.withoutMatrixBorder {
+border: 0;
 }
 
 .startSign, .endSign {

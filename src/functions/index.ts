@@ -1,13 +1,16 @@
 import {
   column,
   diag,
+  index,
   inv,
   map,
   MathType,
   Matrix,
   multiply,
+  range,
   round,
   row,
+  subset,
   transpose,
 } from "mathjs";
 
@@ -137,7 +140,7 @@ export const findN_matrix = (
   transposedA_MatrixAndInvertedD_Matrix: any,
   A_Matrix: number[][] | math.Matrix
 ) => {
-  return inv(multiply(transposedA_MatrixAndInvertedD_Matrix, A_Matrix));
+  return multiply(transposedA_MatrixAndInvertedD_Matrix, A_Matrix);
 };
 
 export const multiplyTransposedA_MatrixAndInvertedD_MatrixOnDeltaU_Matrix = (
@@ -145,6 +148,21 @@ export const multiplyTransposedA_MatrixAndInvertedD_MatrixOnDeltaU_Matrix = (
   dU: number[]
 ) => {
   return multiply(transposedA_MatrixAndInvertedD_Matrix, dU);
+};
+
+export const multiplyN_MatrixAndAD_Matrix = (
+  N_Matrix: math.Matrix,
+  AD_Matrix: MathType
+) => {
+  return multiply(N_Matrix, AD_Matrix);
+};
+
+export const toInverseN_Matrix = (N_Matrix: math.Matrix) => {
+  return inv(N_Matrix);
+};
+
+export const createN1_Matrix = (invertedN_Matrix: math.Matrix) => {
+  return subset(invertedN_Matrix, index(range(0, 2), range(0, 2)));
 };
 
 export const createDeltaX_Matrix = (

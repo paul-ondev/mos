@@ -35,6 +35,9 @@ import {
   longDirection,
   latObject,
   longObject,
+  multiplyN_MatrixAndAD_Matrix,
+  toInverseN_Matrix,
+  createN1_Matrix,
 } from "./functions";
 import { SetStateAction, useState } from "react";
 import { MathType, round, transpose } from "mathjs";
@@ -123,6 +126,9 @@ interface DisplayingCalculatedData {
   AD_Matrix: math.Matrix | MathType | number;
   N_Matrix: math.Matrix;
   ADU_Matrix: math.Matrix | MathType | number;
+
+  invertedN_Matrix: math.Matrix;
+  N1_Matrix: math.Matrix;
   dX_Matrix: math.Matrix | MathType | number;
   compassError: number;
 }
@@ -217,32 +223,10 @@ function App() {
 
   const { register, handleSubmit } = useForm();
 
-  const [inputData, setInputData] = useState();
-
   const [dataForFirstIteration, setDataForFirstIteration] =
     useState<genericForFirstIteration>(undefined);
 
-  // let dU_Matrix = createDeltaUMatrix(
-  //   [dgrToRadians(29.9), DRBearing(4, 8)],
-  //   [dgrToRadians(56.9), DRBearing(6, 4.3)],
-  //   [dgrToRadians(115.2), DRBearing(7.7, -3.1)],
-  //   [dgrToRadians(349.4), DRBearing(-1.4, 5.9)]
-  // );
-  // let a = createInvertedD_Matrix();
-  // let A_Matrix = createAMatrix([4, 8], [6, 4.3], [7.7, -3.1], [-1.4, 5.9]);
-  // let AD_Matrix = multiplyTransposedA_MatrixAndInvertedD_Matrix(A_Matrix, a);
-  // let N_Matrix = findN_matrix(AD_Matrix, A_Matrix);
-  // let ADU_Matrix =
-  //   multiplyTransposedA_MatrixAndInvertedD_MatrixOnDeltaU_Matrix(
-  //     AD_Matrix,
-  //     dU_Matrix
-  //   );
-  // let dX_Matrix = createDeltaX_Matrix(N_Matrix, ADU_Matrix);
-  // let compassError = calculateCompassError(dX_Matrix);
-
   const onSubmit = (data: any) => {
-    // setInputData(data);
-
     let departureDiffOrient_1 = departureDiff(
       {
         dgr: +data.orientNumber1LongDGR,
@@ -361,7 +345,10 @@ function App() {
         AD_Matrix,
         dU_Matrix
       );
-    let dX_Matrix = createDeltaX_Matrix(N_Matrix, ADU_Matrix);
+
+    let invertedN_Matrix = toInverseN_Matrix(N_Matrix);
+    let N1_Matrix = createN1_Matrix(invertedN_Matrix);
+    let dX_Matrix = createDeltaX_Matrix(invertedN_Matrix, ADU_Matrix);
     let compassError = calculateCompassError(dX_Matrix);
 
     let dataForFirstIterationObject = {
@@ -451,12 +438,14 @@ function App() {
       AD_Matrix: AD_Matrix,
       N_Matrix,
       ADU_Matrix,
+      invertedN_Matrix,
+      N1_Matrix,
       dX_Matrix,
       compassError,
     };
     setDataForFirstIteration(dataForFirstIterationObject);
   };
-  console.log(JSON.parse(JSON.stringify(dataForFirstIteration?.AD_Matrix)));
+  console.log(dataForFirstIteration?.dX_Matrix);
 
   return (
     <div className="App">
@@ -708,13 +697,13 @@ function App() {
           <ImageWithValue
             imageUrl={DRbearings_img}
             oneDimensionArr={dataForFirstIteration.DRBearingsSet}
+            withoutMatrixBorder
           />
 
           <h5>2. Формируем матрицу ∆U</h5>
           <ImageWithValue
             imageUrl={deltaU_img}
             oneDimensionArr={dataForFirstIteration.dU_Matrix}
-            matrixBorder
           />
 
           <h5>3. Рассчитываем матрицу A.</h5>
@@ -724,7 +713,6 @@ function App() {
           <ImageWithValue
             imageUrl={A_Matrix}
             twoDimensionArray={dataForFirstIteration.A_Matrix}
-            matrixBorder
           />
           <h5>
             4. Вычисляем весовую матрицу D<sup>-1</sup>
@@ -736,12 +724,10 @@ function App() {
 
           <Matrix
             twoDimensionArray={transpose(dataForFirstIteration.A_Matrix)}
-            matrixBorder
             endMultiplySign
           />
           <Matrix
             twoDimensionArray={dataForFirstIteration.invertedD_Matrix}
-            matrixBorder
             startMultiplySign
             endEqualSign
           />
@@ -750,8 +736,69 @@ function App() {
               JSON.stringify(dataForFirstIteration?.AD_Matrix)
             )}
             startEqualSign
-            matrixBorder
           />
+          <h5>
+            6. Вычисляем матрицу коэффициентов нормального уравнения N = A
+            <sup>T</sup>× D<sup>-1</sup> × A
+          </h5>
+
+          <Matrix
+            twoDimensionArray={JSON.parse(
+              JSON.stringify(dataForFirstIteration?.AD_Matrix)
+            )}
+            endMultiplySign
+          />
+          <Matrix
+            twoDimensionArray={dataForFirstIteration.A_Matrix}
+            startMultiplySign
+            endEqualSign
+          />
+          <Matrix
+            twoDimensionArray={dataForFirstIteration.N_Matrix}
+            startEqualSign
+          />
+
+          <h5>
+            7. Вычисляем априорно ковариационную матрицу N<sup>-1</sup> = (A
+            <sup>T</sup>× D<sup>-1</sup> × A)<sup>-1</sup> =
+          </h5>
+          <Matrix
+            twoDimensionArray={dataForFirstIteration.invertedN_Matrix}
+            startEqualSign
+          />
+          <Matrix
+            twoDimensionArray={dataForFirstIteration.N1_Matrix}
+            startSign=" N1 = "
+          />
+
+          <h5>
+            8. Вычисляем матрицу (вектор) неизвестных: ∆ x = N<sup>-1</sup> × A
+            <sup>T</sup> × D<sup>-1</sup> × ∆U =
+          </h5>
+          <Matrix
+            twoDimensionArray={dataForFirstIteration.invertedN_Matrix}
+            startEqualSign
+            endMultiplySign
+          />
+          <Matrix
+            twoDimensionArray={JSON.parse(
+              JSON.stringify(dataForFirstIteration?.AD_Matrix)
+            )}
+            startMultiplySign
+            endMultiplySign
+          />
+          <Matrix
+            oneDimensionArr={dataForFirstIteration.dU_Matrix}
+            startMultiplySign
+            endEqualSign
+          />
+          <Matrix
+            oneDimensionArr={JSON.parse(
+              JSON.stringify(dataForFirstIteration.dX_Matrix)
+            )}
+            startEqualSign
+          />
+          <h6>Поправка компаса = {dataForFirstIteration.compassError} °</h6>
         </Box>
       )}
     </div>

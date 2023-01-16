@@ -12,7 +12,7 @@ type Props = {
   endMultiplySign?: boolean;
   endEqualSign?: boolean;
   oneDimensionArr?: number[];
-  matrixBorder?: boolean;
+  withoutMatrixBorder?: boolean;
   twoDimensionArray?: number[][] | math.Matrix;
 };
 
@@ -24,7 +24,7 @@ export default function Matrix({
   endMultiplySign,
   endEqualSign,
   oneDimensionArr,
-  matrixBorder,
+  withoutMatrixBorder,
   twoDimensionArray,
 }: Props) {
   return (
@@ -34,7 +34,11 @@ export default function Matrix({
           (startMultiplySign ? " X " : false) ||
           (startEqualSign ? " = " : false)}
       </div>
-      <table className={classNames("value", { matrixBorder: matrixBorder })}>
+      <table
+        className={classNames("value", {
+          withoutMatrixBorder: withoutMatrixBorder,
+        })}
+      >
         <>
           {!twoDimensionArray &&
             oneDimensionArr?.map((item) => (
