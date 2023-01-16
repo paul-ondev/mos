@@ -1,5 +1,11 @@
 import "./App.css";
 
+import DRbearings_img from "./images/DRbearings.png";
+import deltaU_img from "./images/deltaU.png";
+import partialDerivative from "./images/partialDerivative.png";
+import A_Matrix from "./images/A_Matrix.png";
+import D1_Matrix from "./images/D-1_Matrix.png";
+
 import NavItem from "../src/components/NavItem";
 
 import Box from "@mui/material/Box";
@@ -25,45 +31,103 @@ import {
   multiplyTransposedA_MatrixAndInvertedD_MatrixOnDeltaU_Matrix,
   createDeltaX_Matrix,
   calculateCompassError,
+  latDirection,
+  longDirection,
+  latObject,
+  longObject,
 } from "./functions";
 import { SetStateAction, useState } from "react";
+import { MathType, round, transpose } from "mathjs";
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+} from "@mui/material";
+import ImageWithValue from "./components/ImageWithValue";
+import Matrix from "./components/Matrix";
 
 interface inputData {
   DRLatDGR: number;
-  DRLatDir: "n" | "N" | "s" | "S";
+  DRLatDir: latDirection;
   DRLatMins: number;
   DRLongDGR: number;
-  DRLongDir: "w" | "W" | "e" | "E";
+  DRLongDir: longDirection;
   DRLongMins: number;
   orientNumber1Bearing: number;
   orientNumber1LatDGR: number;
-  orientNumber1LatDir: "n" | "N" | "s" | "S";
+  orientNumber1LatDir: latDirection;
   orientNumber1LatMins: number;
   orientNumber1LongDGR: number;
-  orientNumber1LongDir: "w" | "W" | "e" | "E";
+  orientNumber1LongDir: longDirection;
   orientNumber1LongMins: number;
   orientNumber2Bearing: number;
   orientNumber2LatDGR: number;
-  orientNumber2LatDir: "n" | "N" | "s" | "S";
+  orientNumber2LatDir: latDirection;
   orientNumber2LatMins: number;
   orientNumber2LongDGR: number;
-  orientNumber2LongDir: "w" | "W" | "e" | "E";
+  orientNumber2LongDir: longDirection;
   orientNumber2LongMins: number;
   orientNumber3Bearing: number;
   orientNumber3LatDGR: number;
-  orientNumber3LatDir: "n" | "N" | "s" | "S";
+  orientNumber3LatDir: latDirection;
   orientNumber3LatMins: number;
   orientNumber3LongDGR: number;
-  orientNumber3LongDir: "w" | "W" | "e" | "E";
+  orientNumber3LongDir: longDirection;
   orientNumber3LongMins: number;
   orientNumber4Bearing: number;
   orientNumber4LatDGR: number;
-  orientNumber4LatDir: "n" | "N" | "s" | "S";
+  orientNumber4LatDir: latDirection;
   orientNumber4LatMins: number;
   orientNumber4LongDGR: number;
-  orientNumber4LongDir: "w" | "W" | "e" | "E";
+  orientNumber4LongDir: longDirection;
   orientNumber4LongMins: number;
 }
+
+interface DisplayingCalculatedData {
+  initialValues: {
+    DRPosition: {
+      lat: latObject;
+      long: longObject;
+    };
+    first: {
+      lat: latObject;
+      long: longObject;
+      bearing: number;
+    };
+    second: {
+      lat: latObject;
+      long: longObject;
+      bearing: number;
+    };
+    third: {
+      lat: latObject;
+      long: longObject;
+      bearing: number;
+    };
+    fourth: {
+      lat: latObject;
+      long: longObject;
+      bearing: number;
+    };
+  };
+  latDiff: number[];
+  departureDiff: number[];
+  DRBearingsSet: number[];
+  dU_Matrix: number[];
+  A_Matrix: number[][];
+  invertedD_Matrix: math.Matrix;
+  AD_Matrix: math.Matrix | MathType | number;
+  N_Matrix: math.Matrix;
+  ADU_Matrix: math.Matrix | MathType | number;
+  dX_Matrix: math.Matrix | MathType | number;
+  compassError: number;
+}
+
+type genericForFirstIteration = DisplayingCalculatedData | undefined;
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -155,6 +219,9 @@ function App() {
 
   const [inputData, setInputData] = useState();
 
+  const [dataForFirstIteration, setDataForFirstIteration] =
+    useState<genericForFirstIteration>(undefined);
+
   // let dU_Matrix = createDeltaUMatrix(
   //   [dgrToRadians(29.9), DRBearing(4, 8)],
   //   [dgrToRadians(56.9), DRBearing(6, 4.3)],
@@ -163,15 +230,15 @@ function App() {
   // );
   // let a = createInvertedD_Matrix();
   // let A_Matrix = createAMatrix([4, 8], [6, 4.3], [7.7, -3.1], [-1.4, 5.9]);
-  // let AD_matrix = multiplyTransposedA_MatrixAndInvertedD_Matrix(A_Matrix, a);
-  // let N_Matrix = findN_matrix(AD_matrix, A_Matrix);
+  // let AD_Matrix = multiplyTransposedA_MatrixAndInvertedD_Matrix(A_Matrix, a);
+  // let N_Matrix = findN_matrix(AD_Matrix, A_Matrix);
   // let ADU_Matrix =
   //   multiplyTransposedA_MatrixAndInvertedD_MatrixOnDeltaU_Matrix(
-  //     AD_matrix,
+  //     AD_Matrix,
   //     dU_Matrix
   //   );
-  // let deltaX_Matrix = createDeltaX_Matrix(N_Matrix, ADU_Matrix);
-  // let compassError = calculateCompassError(deltaX_Matrix);
+  // let dX_Matrix = createDeltaX_Matrix(N_Matrix, ADU_Matrix);
+  // let compassError = calculateCompassError(dX_Matrix);
 
   const onSubmit = (data: any) => {
     // setInputData(data);
@@ -264,46 +331,132 @@ function App() {
       }
     );
 
+    let DRBearingsSet = [
+      DRBearing(departureDiffOrient_1, latDiffOrient_1),
+      DRBearing(departureDiffOrient_2, latDiffOrient_2),
+      DRBearing(departureDiffOrient_3, latDiffOrient_3),
+      DRBearing(departureDiffOrient_4, latDiffOrient_4),
+    ];
+
     let dU_Matrix = createDeltaUMatrix(
-      [
-        dgrToRadians(+data.orientNumber1Bearing),
-        DRBearing(departureDiffOrient_1, latDiffOrient_1),
-      ],
-      [
-        dgrToRadians(+data.orientNumber2Bearing),
-        DRBearing(departureDiffOrient_2, latDiffOrient_2),
-      ],
-      [
-        dgrToRadians(+data.orientNumber3Bearing),
-        DRBearing(departureDiffOrient_3, latDiffOrient_3),
-      ],
-      [
-        dgrToRadians(+data.orientNumber4Bearing),
-        DRBearing(departureDiffOrient_4, latDiffOrient_4),
-      ]
+      [dgrToRadians(+data.orientNumber1Bearing), DRBearingsSet[0]],
+      [dgrToRadians(+data.orientNumber2Bearing), DRBearingsSet[1]],
+      [dgrToRadians(+data.orientNumber3Bearing), DRBearingsSet[2]],
+      [dgrToRadians(+data.orientNumber4Bearing), DRBearingsSet[3]]
     );
-    let invertedD_matrix = createInvertedD_Matrix();
+    let invertedD_Matrix = createInvertedD_Matrix();
     let A_Matrix = createAMatrix(
       [departureDiffOrient_1, latDiffOrient_1],
       [departureDiffOrient_2, latDiffOrient_2],
       [departureDiffOrient_3, latDiffOrient_3],
       [departureDiffOrient_4, latDiffOrient_4]
     );
-    let AD_matrix = multiplyTransposedA_MatrixAndInvertedD_Matrix(
+    let AD_Matrix = multiplyTransposedA_MatrixAndInvertedD_Matrix(
       A_Matrix,
-      invertedD_matrix
+      invertedD_Matrix
     );
-    let N_Matrix = findN_matrix(AD_matrix, A_Matrix);
+    let N_Matrix = findN_matrix(AD_Matrix, A_Matrix);
     let ADU_Matrix =
       multiplyTransposedA_MatrixAndInvertedD_MatrixOnDeltaU_Matrix(
-        AD_matrix,
+        AD_Matrix,
         dU_Matrix
       );
-    let deltaX_Matrix = createDeltaX_Matrix(N_Matrix, ADU_Matrix);
-    let compassError = calculateCompassError(deltaX_Matrix);
+    let dX_Matrix = createDeltaX_Matrix(N_Matrix, ADU_Matrix);
+    let compassError = calculateCompassError(dX_Matrix);
 
-    console.log(compassError);
+    let dataForFirstIterationObject = {
+      initialValues: {
+        DRPosition: {
+          lat: {
+            dgr: data.DRLatDGR,
+            mins: data.DRLatMins,
+            dir: data.DRLatDir,
+          },
+          long: {
+            dgr: data.DRLongDGR,
+            mins: data.DRLongMins,
+            dir: data.DRLongDir,
+          },
+        },
+        first: {
+          lat: {
+            dgr: data.orientNumber1LatDGR,
+            mins: data.orientNumber1LatMins,
+            dir: data.orientNumber1LatDir,
+          },
+          long: {
+            dgr: data.orientNumber1LongDGR,
+            mins: data.orientNumber1LongMins,
+            dir: data.orientNumber1LongDir,
+          },
+          bearing: data.orientNumber1Bearing,
+        },
+        second: {
+          lat: {
+            dgr: data.orientNumber2LatDGR,
+            mins: data.orientNumber2LatMins,
+            dir: data.orientNumber2LatDir,
+          },
+          long: {
+            dgr: data.orientNumber2LongDGR,
+            mins: data.orientNumber2LongMins,
+            dir: data.orientNumber2LongDir,
+          },
+          bearing: data.orientNumber2Bearing,
+        },
+        third: {
+          lat: {
+            dgr: data.orientNumber3LatDGR,
+            mins: data.orientNumber3LatMins,
+            dir: data.orientNumber3LatDir,
+          },
+          long: {
+            dgr: data.orientNumber3LongDGR,
+            mins: data.orientNumber3LongMins,
+            dir: data.orientNumber3LongDir,
+          },
+          bearing: data.orientNumber3Bearing,
+        },
+        fourth: {
+          lat: {
+            dgr: data.orientNumber4LatDGR,
+            mins: data.orientNumber4LatMins,
+            dir: data.orientNumber4LatDir,
+          },
+          long: {
+            dgr: data.orientNumber4LongDGR,
+            mins: data.orientNumber4LongMins,
+            dir: data.orientNumber4LongDir,
+          },
+          bearing: data.orientNumber4Bearing,
+        },
+      },
+      latDiff: [
+        latDiffOrient_1,
+        latDiffOrient_2,
+        latDiffOrient_3,
+        latDiffOrient_4,
+      ],
+      departureDiff: [
+        departureDiffOrient_1,
+        departureDiffOrient_2,
+        departureDiffOrient_3,
+        departureDiffOrient_4,
+      ],
+      DRBearingsSet,
+
+      dU_Matrix,
+      A_Matrix,
+      invertedD_Matrix,
+      AD_Matrix: AD_Matrix,
+      N_Matrix,
+      ADU_Matrix,
+      dX_Matrix,
+      compassError,
+    };
+    setDataForFirstIteration(dataForFirstIterationObject);
   };
+  console.log(JSON.parse(JSON.stringify(dataForFirstIteration?.AD_Matrix)));
 
   return (
     <div className="App">
@@ -400,6 +553,207 @@ function App() {
           </Button>
         </ButtonCard>
       </form>
+      {dataForFirstIteration?.compassError && (
+        <Box mt={6}>
+          <Typography variant="h3" mt={2} mb={3}>
+            Первая итерация
+          </Typography>
+          <Typography>Исходные данные</Typography>
+          <TableContainer component={Paper}>
+            <Table sx={{ minWidth: 650 }} aria-label="simple table">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Номер ориентира</TableCell>
+                  <TableCell align="right">Широта</TableCell>
+                  <TableCell align="right">Долгота</TableCell>
+                  <TableCell align="right">Пеленг обсервованный </TableCell>
+                  <TableCell align="right">Разность широт</TableCell>
+                  <TableCell align="right">Отшествие</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow>
+                  <TableCell>1 ориентир</TableCell>
+                  <TableCell align="right">
+                    {dataForFirstIteration?.initialValues.first.lat.dgr +
+                      "°" +
+                      dataForFirstIteration?.initialValues.first.lat.mins +
+                      "' " +
+                      dataForFirstIteration?.initialValues.first.lat.dir}
+                  </TableCell>
+                  <TableCell align="right">
+                    {dataForFirstIteration?.initialValues.first.long.dgr +
+                      "°" +
+                      dataForFirstIteration?.initialValues.first.long.mins +
+                      "' " +
+                      dataForFirstIteration?.initialValues.first.long.dir}
+                  </TableCell>
+                  <TableCell align="right">
+                    {dataForFirstIteration?.initialValues.first.bearing + "°"}
+                  </TableCell>
+                  <TableCell align="right">
+                    {round(dataForFirstIteration?.latDiff[0], 2)}
+                  </TableCell>
+                  <TableCell align="right">
+                    {round(dataForFirstIteration?.departureDiff[0], 2)}
+                  </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell>2 ориентир</TableCell>
+                  <TableCell align="right">
+                    {dataForFirstIteration?.initialValues.second.lat.dgr +
+                      "°" +
+                      dataForFirstIteration?.initialValues.second.lat.mins +
+                      "' " +
+                      dataForFirstIteration?.initialValues.second.lat.dir}
+                  </TableCell>
+                  <TableCell align="right">
+                    {dataForFirstIteration?.initialValues.second.long.dgr +
+                      "°" +
+                      dataForFirstIteration?.initialValues.second.long.mins +
+                      "' " +
+                      dataForFirstIteration?.initialValues.second.long.dir}
+                  </TableCell>
+                  <TableCell align="right">
+                    {dataForFirstIteration?.initialValues.second.bearing + "°"}
+                  </TableCell>
+                  <TableCell align="right">
+                    {round(dataForFirstIteration?.latDiff[1], 2)}
+                  </TableCell>
+                  <TableCell align="right">
+                    {round(dataForFirstIteration?.departureDiff[1], 2)}
+                  </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell>3 ориентир</TableCell>
+                  <TableCell align="right">
+                    {dataForFirstIteration?.initialValues.third.lat.dgr +
+                      "°" +
+                      dataForFirstIteration?.initialValues.third.lat.mins +
+                      "' " +
+                      dataForFirstIteration?.initialValues.third.lat.dir}
+                  </TableCell>
+                  <TableCell align="right">
+                    {dataForFirstIteration?.initialValues.third.long.dgr +
+                      "°" +
+                      dataForFirstIteration?.initialValues.third.long.mins +
+                      "' " +
+                      dataForFirstIteration?.initialValues.third.long.dir}
+                  </TableCell>
+                  <TableCell align="right">
+                    {dataForFirstIteration?.initialValues.third.bearing + "°"}
+                  </TableCell>
+                  <TableCell align="right">
+                    {round(dataForFirstIteration?.latDiff[2], 2)}
+                  </TableCell>
+                  <TableCell align="right">
+                    {round(dataForFirstIteration?.departureDiff[2], 2)}
+                  </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell>4 ориентир</TableCell>
+                  <TableCell align="right">
+                    {dataForFirstIteration?.initialValues.fourth.lat.dgr +
+                      "°" +
+                      dataForFirstIteration?.initialValues.fourth.lat.mins +
+                      "' " +
+                      dataForFirstIteration?.initialValues.fourth.lat.dir}
+                  </TableCell>
+                  <TableCell align="right">
+                    {dataForFirstIteration?.initialValues.fourth.long.dgr +
+                      "°" +
+                      dataForFirstIteration?.initialValues.fourth.long.mins +
+                      "' " +
+                      dataForFirstIteration?.initialValues.fourth.long.dir}
+                  </TableCell>
+                  <TableCell align="right">
+                    {dataForFirstIteration?.initialValues.fourth.bearing + "°"}
+                  </TableCell>
+                  <TableCell align="right">
+                    {round(dataForFirstIteration?.latDiff[3], 2)}
+                  </TableCell>
+                  <TableCell align="right">
+                    {round(dataForFirstIteration?.departureDiff[3], 2)}
+                  </TableCell>
+                </TableRow>
+
+                <TableRow>
+                  <TableCell>Счислимые координаты</TableCell>
+                  <TableCell align="right">
+                    {dataForFirstIteration?.initialValues.DRPosition.lat.dgr +
+                      "°" +
+                      dataForFirstIteration?.initialValues.DRPosition.lat.mins +
+                      "' " +
+                      dataForFirstIteration?.initialValues.DRPosition.lat.dir}
+                  </TableCell>
+                  <TableCell align="right">
+                    {dataForFirstIteration?.initialValues.DRPosition.long.dgr +
+                      "°" +
+                      dataForFirstIteration?.initialValues.DRPosition.long
+                        .mins +
+                      "' " +
+                      dataForFirstIteration?.initialValues.DRPosition.long.dir}
+                  </TableCell>
+                  <TableCell align="right"></TableCell>
+                  <TableCell align="right"></TableCell>
+                  <TableCell align="right"></TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <h5>1. Найдём счислимые пеленга</h5>
+          <ImageWithValue
+            imageUrl={DRbearings_img}
+            oneDimensionArr={dataForFirstIteration.DRBearingsSet}
+          />
+
+          <h5>2. Формируем матрицу ∆U</h5>
+          <ImageWithValue
+            imageUrl={deltaU_img}
+            oneDimensionArr={dataForFirstIteration.dU_Matrix}
+            matrixBorder
+          />
+
+          <h5>3. Рассчитываем матрицу A.</h5>
+          <h6>Находим частные производные по ∂x и ∂y и ∂z</h6>
+          <img src={partialDerivative} alt="" />
+          <h6>Формируем матрицу A</h6>
+          <ImageWithValue
+            imageUrl={A_Matrix}
+            twoDimensionArray={dataForFirstIteration.A_Matrix}
+            matrixBorder
+          />
+          <h5>
+            4. Вычисляем весовую матрицу D<sup>-1</sup>
+          </h5>
+          <img src={D1_Matrix} alt="" />
+          <h5>
+            5. Вычисляем промежуточную матрицу A<sup>T</sup>× D<sup>-1</sup>
+          </h5>
+
+          <Matrix
+            twoDimensionArray={transpose(dataForFirstIteration.A_Matrix)}
+            matrixBorder
+            endMultiplySign
+          />
+          <Matrix
+            twoDimensionArray={dataForFirstIteration.invertedD_Matrix}
+            matrixBorder
+            startMultiplySign
+            endEqualSign
+          />
+          <Matrix
+            twoDimensionArray={JSON.parse(
+              JSON.stringify(dataForFirstIteration?.AD_Matrix)
+            )}
+            startEqualSign
+            matrixBorder
+          />
+        </Box>
+      )}
     </div>
   );
 }

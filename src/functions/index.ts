@@ -15,18 +15,21 @@ export const toMins = (dgr: number, mins: number): number => {
   return dgr * 60 + mins;
 };
 
-interface latDiffParam {
+export type latDirection = "n" | "N" | "s" | "S";
+export type longDirection = "w" | "W" | "e" | "E";
+
+export interface latObject {
   dgr: number;
   mins: number;
-  dir: "n" | "N" | "s" | "S";
+  dir: latDirection;
 }
-interface longParam {
+export interface longObject {
   dgr: number;
   mins: number;
-  dir: "w" | "W" | "e" | "E";
+  dir: longDirection;
 }
 
-export function latDiff(observedLat: latDiffParam, DRLat: latDiffParam) {
+export function latDiff(observedLat: latObject, DRLat: latObject) {
   let observedLatInMins = toMins(observedLat.dgr, observedLat.mins);
   observedLatInMins =
     observedLat.dir === "n" || observedLat.dir === "N"
@@ -47,8 +50,8 @@ export const radiansToDgr = (rad: number) => {
 };
 
 export const departureDiff = (
-  observedLong: longParam,
-  DRlong: longParam,
+  observedLong: longObject,
+  DRlong: longObject,
   meanLatDGR: number
 ) => {
   let observedLongInMins = toMins(observedLong.dgr, observedLong.mins);
@@ -75,8 +78,8 @@ export const DRBearing = (departureDiff: number, latDiff: number): number => {
       ? bearing_quarter + Math.PI
       : bearing_quarter + 2 * Math.PI;
   }
-  console.log("ERROR departureDiff nan");
-  return NaN;
+  console.log("ERROR departureDiff = 0");
+  return 0;
 };
 
 export const createDeltaUMatrix = (
