@@ -1,15 +1,14 @@
 import {
-  column,
   diag,
+  fix,
   index,
   inv,
   map,
   MathType,
-  Matrix,
   multiply,
   range,
   round,
-  row,
+  sec,
   subset,
   transpose,
 } from "mathjs";
@@ -176,4 +175,64 @@ export const createDeltaX_Matrix = (
 // problems with types' assigning
 export const calculateCompassError = (deltaX_Matrix: any) => {
   return radiansToDgr(deltaX_Matrix[2]);
+};
+
+export const calculateObservedCoordinates = (
+  dX_Matrix: any,
+  DRLatObject: latObject,
+  DRLongObject: longObject
+) => {
+  let result = [];
+  let DRLatInMins = toMins(DRLatObject.dgr, DRLatObject.mins);
+
+  DRLatInMins =
+    DRLatObject.dir === "n" || DRLatObject.dir === "N"
+      ? DRLatInMins
+      : -DRLatInMins;
+
+  result.push(DRLatInMins + radiansToDgr(dX_Matrix[0]) / 60);
+
+  let DRLongInMins = toMins(DRLongObject.dgr, DRLongObject.mins);
+  DRLongInMins =
+    DRLongObject.dir === "e" || DRLongObject.dir === "E"
+      ? DRLongInMins
+      : -DRLongInMins;
+
+  result.push(
+    DRLongInMins + (radiansToDgr(dX_Matrix[1]) / 60) * sec(dgrToRadians(60))
+  );
+
+  return result;
+};
+
+const extractIntegerPartAndRemainderFromDivision = (
+  divisible: number,
+  divider: number
+) => {
+  const quotient = fix(divisible / divider);
+  const remainder = divisible % divider;
+
+  return [quotient, remainder];
+};
+
+export const convertMinutesToDMSFromMinutes = (minuets: number) => {
+  let isDirectionNorthOrEast = minuets > 0 ? true : false;
+  let positiveMinutes = Math.abs(minuets);
+
+  let degreesAndMinutesArray = extractIntegerPartAndRemainderFromDivision(
+    positiveMinutes,
+    60
+  );
+
+  let minutesAndSecondsArray = extractIntegerPartAndRemainderFromDivision(
+    degreesAndMinutesArray[1],
+    1
+  );
+  let seconds = minutesAndSecondsArray[1] * 60;
+  return {
+    dgr: degreesAndMinutesArray[0],
+    mins: minutesAndSecondsArray[0],
+    seconds,
+    isDirectionNorthOrEast,
+  };
 };

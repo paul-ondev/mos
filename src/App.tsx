@@ -38,6 +38,8 @@ import {
   multiplyN_MatrixAndAD_Matrix,
   toInverseN_Matrix,
   createN1_Matrix,
+  calculateObservedCoordinates,
+  convertMinutesToDMSFromMinutes,
 } from "./functions";
 import { SetStateAction, useState } from "react";
 import { MathType, round, transpose } from "mathjs";
@@ -350,6 +352,12 @@ function App() {
     let N1_Matrix = createN1_Matrix(invertedN_Matrix);
     let dX_Matrix = createDeltaX_Matrix(invertedN_Matrix, ADU_Matrix);
     let compassError = calculateCompassError(dX_Matrix);
+    let finalObservedCoordinates = calculateObservedCoordinates(
+      dX_Matrix,
+      { dgr: +data.DRLatDGR, mins: +data.DRLatMins, dir: data.DRLatDir },
+      { dgr: +data.DRLongDGR, mins: +data.DRLongMins, dir: data.DRLongDir }
+    );
+    console.log(finalObservedCoordinates);
 
     let dataForFirstIterationObject = {
       initialValues: {
@@ -445,7 +453,6 @@ function App() {
     };
     setDataForFirstIteration(dataForFirstIterationObject);
   };
-  console.log(dataForFirstIteration?.dX_Matrix);
 
   return (
     <div className="App">
@@ -799,6 +806,14 @@ function App() {
             startEqualSign
           />
           <h6>Поправка компаса = {dataForFirstIteration.compassError} °</h6>
+          <h5>9. Рассчитаем параметры обсервации</h5>
+          <div className="container">
+            <div>
+              1) φ<sub>0</sub> = φ<sub>c</sub> + ∆φ = {2 + 2}
+            </div>
+
+            <p></p>
+          </div>
         </Box>
       )}
     </div>
