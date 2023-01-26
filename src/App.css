@@ -30,3 +30,14 @@ h5, h6 {
   padding-left: 30px;
   text-align: left;
 }
+
+.finalFirstIterationValues {
+  padding-left: 30px;
+  display: flex;
+  justify-content: space-between;
+  width: 70%;
+}
+
+sub {
+  font-size: smaller; 
+}

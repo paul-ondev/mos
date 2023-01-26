@@ -5,6 +5,7 @@ import deltaU_img from "./images/deltaU.png";
 import partialDerivative from "./images/partialDerivative.png";
 import A_Matrix from "./images/A_Matrix.png";
 import D1_Matrix from "./images/D-1_Matrix.png";
+import lambda_formula from "./images/lambda_formula.png";
 
 import NavItem from "../src/components/NavItem";
 
@@ -40,6 +41,7 @@ import {
   createN1_Matrix,
   calculateObservedCoordinates,
   convertMinutesToDMSFromMinutes,
+  calculatePrioriErrors,
 } from "./functions";
 import { SetStateAction, useState } from "react";
 import { MathType, round, transpose } from "mathjs";
@@ -133,6 +135,28 @@ interface DisplayingCalculatedData {
   N1_Matrix: math.Matrix;
   dX_Matrix: math.Matrix | MathType | number;
   compassError: number;
+  finalObservedCoordinates: {
+    lat: {
+      dgr: number;
+      mins: number;
+      seconds: number;
+      isDirectionNorthOrEast: boolean;
+    };
+    lon: {
+      dgr: number;
+      mins: number;
+      seconds: number;
+      isDirectionNorthOrEast: boolean;
+    };
+  };
+  prioriErrorsObject: {
+    firstLambda: number;
+    secondLambda: number;
+    a: number;
+    b: number;
+    a_meters: number;
+    b_meters: number;
+  };
 }
 
 type genericForFirstIteration = DisplayingCalculatedData | undefined;
@@ -357,7 +381,7 @@ function App() {
       { dgr: +data.DRLatDGR, mins: +data.DRLatMins, dir: data.DRLatDir },
       { dgr: +data.DRLongDGR, mins: +data.DRLongMins, dir: data.DRLongDir }
     );
-    console.log(finalObservedCoordinates);
+    let prioriErrorsObject = calculatePrioriErrors(N1_Matrix);
 
     let dataForFirstIterationObject = {
       initialValues: {
@@ -450,10 +474,16 @@ function App() {
       N1_Matrix,
       dX_Matrix,
       compassError,
+      finalObservedCoordinates,
+      prioriErrorsObject,
     };
     setDataForFirstIteration(dataForFirstIterationObject);
   };
-
+  // console.log(dataForFirstIteration?.finalObservedCoordinates);
+  let N1_Matrix_Formula = [
+    ["n11", "n12"],
+    ["n21", "n22"],
+  ];
   return (
     <div className="App">
       <Box sx={{ flexGrow: 0.7, backgroundColor: "rgb(157 143 143 / 60%)" }}>
@@ -766,7 +796,8 @@ function App() {
           />
 
           <h5>
-            7. Вычисляем априорно ковариационную матрицу N<sup>-1</sup> = (A
+            7. Вычисляем ковариационную матрицу погрешностей обсервованных
+            координат N<sup>-1</sup> = (A
             <sup>T</sup>× D<sup>-1</sup> × A)<sup>-1</sup> =
           </h5>
           <Matrix
@@ -807,13 +838,94 @@ function App() {
           />
           <h6>Поправка компаса = {dataForFirstIteration.compassError} °</h6>
           <h5>9. Рассчитаем параметры обсервации</h5>
-          <div className="container">
+          <div className="finalFirstIterationValues">
             <div>
-              1) φ<sub>0</sub> = φ<sub>c</sub> + ∆φ = {2 + 2}
+              1) φ<sub>0</sub> = φ<sub>c</sub> + ∆φ ={" "}
+              <b>
+                {" "}
+                {dataForFirstIteration.finalObservedCoordinates.lat.dgr +
+                  "°  " +
+                  dataForFirstIteration.finalObservedCoordinates.lat.mins +
+                  "'  " +
+                  dataForFirstIteration.finalObservedCoordinates.lat.seconds.toFixed(
+                    2
+                  ) +
+                  '"  ' +
+                  (dataForFirstIteration.finalObservedCoordinates.lat
+                    .isDirectionNorthOrEast
+                    ? "N"
+                    : "S")}
+              </b>
             </div>
-
-            <p></p>
+            <div>
+              2) λ<sub>0</sub> = λ<sub>c</sub> + ∆λ ={" "}
+              <b>
+                {dataForFirstIteration.finalObservedCoordinates.lon.dgr +
+                  "°  " +
+                  dataForFirstIteration.finalObservedCoordinates.lon.mins +
+                  "'  " +
+                  dataForFirstIteration.finalObservedCoordinates.lon.seconds.toFixed(
+                    2
+                  ) +
+                  '"  ' +
+                  (dataForFirstIteration.finalObservedCoordinates.lon
+                    .isDirectionNorthOrEast
+                    ? "E"
+                    : "W")}
+              </b>
+            </div>
           </div>
+          <h5>
+            10. Априорная точность обсервации (матрица N1 рассчитана в пункте 8)
+          </h5>
+          <h6>
+            Найдём собственные числа матрицы N1, а затем малую (b) и большую (a)
+            полуоси эллипса погрешностей
+          </h6>
+
+          {/* change photo, there is incorrect formula */}
+
+          <ImageWithValue
+            imageUrl={lambda_formula}
+            imageClassName={"lambda_formula"}
+            formula_twoDimensionArray={N1_Matrix_Formula}
+            startSign={"N1 = "}
+          />
+          <div className="container">
+            <table className="value withoutMatrixBorder">
+              <tbody>
+                <tr>
+                  <td>
+                    λ1 = {dataForFirstIteration.prioriErrorsObject?.firstLambda}
+                  </td>
+                  <td>
+                    a = √λ1 = {dataForFirstIteration.prioriErrorsObject.a} x
+                    1852 метра
+                  </td>
+                  <td>
+                    {" "}
+                    = {dataForFirstIteration.prioriErrorsObject.a_meters} метров
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    λ2 ={" "}
+                    {dataForFirstIteration.prioriErrorsObject?.secondLambda}
+                  </td>
+                  <td>
+                    b = √λ2 = {dataForFirstIteration.prioriErrorsObject.b} x
+                    1852 метра
+                  </td>
+                  <td>
+                    = {dataForFirstIteration.prioriErrorsObject.b_meters} метров
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <h6>
+            Вычислим угол наклона большой полуоси относительно N-истинного
+          </h6>
         </Box>
       )}
     </div>

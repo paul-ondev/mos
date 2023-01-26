@@ -6,8 +6,15 @@
   border-radius: 20px;
 }
 .value td {
-  padding-bottom: 10px;
-  padding-right: 10px;
+  padding-bottom: 30px;
+  padding-right: 30px;
+}
+
+.value tr:last-child td {
+  padding-bottom: 0px;
+}
+.value tr td:last-child {
+  padding-right: 0px;
 }
 
 .withoutMatrixBorder {

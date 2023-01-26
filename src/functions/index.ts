@@ -177,12 +177,39 @@ export const calculateCompassError = (deltaX_Matrix: any) => {
   return radiansToDgr(deltaX_Matrix[2]);
 };
 
+// export const calculateObservedCoordinates = (
+//   dX_Matrix: any,
+//   DRLatObject: latObject,
+//   DRLongObject: longObject
+// ) => {
+//   let result = [];
+//   let DRLatInMins = toMins(DRLatObject.dgr, DRLatObject.mins);
+
+//   DRLatInMins =
+//     DRLatObject.dir === "n" || DRLatObject.dir === "N"
+//       ? DRLatInMins
+//       : -DRLatInMins;
+
+//   result.push(DRLatInMins + radiansToDgr(dX_Matrix[0]) / 60);
+
+//   let DRLongInMins = toMins(DRLongObject.dgr, DRLongObject.mins);
+//   DRLongInMins =
+//     DRLongObject.dir === "e" || DRLongObject.dir === "E"
+//       ? DRLongInMins
+//       : -DRLongInMins;
+
+//   result.push(
+//     DRLongInMins + (radiansToDgr(dX_Matrix[1]) / 60) * sec(dgrToRadians(60))
+//   );
+
+//   return result;
+// };
+
 export const calculateObservedCoordinates = (
   dX_Matrix: any,
   DRLatObject: latObject,
   DRLongObject: longObject
 ) => {
-  let result = [];
   let DRLatInMins = toMins(DRLatObject.dgr, DRLatObject.mins);
 
   DRLatInMins =
@@ -190,19 +217,20 @@ export const calculateObservedCoordinates = (
       ? DRLatInMins
       : -DRLatInMins;
 
-  result.push(DRLatInMins + radiansToDgr(dX_Matrix[0]) / 60);
-
   let DRLongInMins = toMins(DRLongObject.dgr, DRLongObject.mins);
   DRLongInMins =
     DRLongObject.dir === "e" || DRLongObject.dir === "E"
       ? DRLongInMins
       : -DRLongInMins;
 
-  result.push(
+  const lat = convertMinutesToDMSFromMinutes(
+    DRLatInMins + radiansToDgr(dX_Matrix[0]) / 60
+  );
+  const lon = convertMinutesToDMSFromMinutes(
     DRLongInMins + (radiansToDgr(dX_Matrix[1]) / 60) * sec(dgrToRadians(60))
   );
 
-  return result;
+  return { lat, lon };
 };
 
 const extractIntegerPartAndRemainderFromDivision = (
@@ -234,5 +262,32 @@ export const convertMinutesToDMSFromMinutes = (minuets: number) => {
     mins: minutesAndSecondsArray[0],
     seconds,
     isDirectionNorthOrEast,
+  };
+};
+
+export const calculatePrioriErrors = (N1_Matrix: any) => {
+  let firstLambda =
+    (N1_Matrix[0][0] +
+      N1_Matrix[1][1] +
+      Math.sqrt(
+        (N1_Matrix[0][0] - N1_Matrix[1][1]) ** 2 + 4 * N1_Matrix[0][1] ** 2
+      )) /
+    2;
+  let secondLambda =
+    (N1_Matrix[0][0] +
+      N1_Matrix[1][1] -
+      Math.sqrt(
+        (N1_Matrix[0][0] - N1_Matrix[1][1]) ** 2 + 4 * N1_Matrix[0][1] ** 2
+      )) /
+    2;
+  let a = Math.sqrt(firstLambda);
+  let b = Math.sqrt(secondLambda);
+  return {
+    firstLambda,
+    secondLambda,
+    a,
+    b,
+    a_meters: a * 1852,
+    b_meters: b * 1852,
   };
 };

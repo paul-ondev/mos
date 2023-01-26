@@ -14,6 +14,7 @@ type Props = {
   oneDimensionArr?: number[];
   withoutMatrixBorder?: boolean;
   twoDimensionArray?: number[][] | math.Matrix;
+  formula_twoDimensionArray?: string[][];
 };
 
 export default function Matrix({
@@ -26,13 +27,22 @@ export default function Matrix({
   oneDimensionArr,
   withoutMatrixBorder,
   twoDimensionArray,
+  formula_twoDimensionArray,
 }: Props) {
   return (
     <div className="container">
-      <div className="startSign">
-        {(startSign ? ` ${startSign} ` : false) ||
+      <div
+        className="startSign"
+        dangerouslySetInnerHTML={{
+          __html:
+            (startSign ? ` ${startSign} ` : "") ||
+            (startMultiplySign ? " X " : "") ||
+            (startEqualSign ? " = " : ""),
+        }}
+      >
+        {/* {(startSign ? ` ${startSign} ` : false) ||
           (startMultiplySign ? " X " : false) ||
-          (startEqualSign ? " = " : false)}
+          (startEqualSign ? " = " : false)} */}
       </div>
       <table
         className={classNames("value", {
@@ -50,6 +60,14 @@ export default function Matrix({
             twoDimensionArray?.map((item: number[]) => (
               <tr>
                 {item.map((item: number) => (
+                  <td>{item}</td>
+                ))}
+              </tr>
+            ))}
+          {formula_twoDimensionArray &&
+            formula_twoDimensionArray.map((item) => (
+              <tr>
+                {item.map((item: string) => (
                   <td>{item}</td>
                 ))}
               </tr>
