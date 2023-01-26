@@ -14,6 +14,7 @@ type Props = {
   oneDimensionArr?: number[];
   withoutMatrixBorder?: boolean;
   twoDimensionArray?: number[][] | math.Matrix;
+  formula_oneDimensionArray?: string[];
   formula_twoDimensionArray?: string[][];
 };
 
@@ -27,6 +28,7 @@ export default function Matrix({
   oneDimensionArr,
   withoutMatrixBorder,
   twoDimensionArray,
+  formula_oneDimensionArray,
   formula_twoDimensionArray,
 }: Props) {
   return (
@@ -62,6 +64,12 @@ export default function Matrix({
                 {item.map((item: number) => (
                   <td>{item}</td>
                 ))}
+              </tr>
+            ))}
+          {formula_oneDimensionArray &&
+            formula_oneDimensionArray.map((item) => (
+              <tr>
+                <td>{item}</td>
               </tr>
             ))}
           {formula_twoDimensionArray &&

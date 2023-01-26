@@ -13,6 +13,7 @@ type Props = {
   twoDimensionArray?: number[][];
   startSign?: string;
   endSign?: string;
+  formula_oneDimensionArray?: string[];
   formula_twoDimensionArray?: string[][];
 };
 
@@ -24,6 +25,7 @@ export default function ImageWithValue({
   twoDimensionArray,
   startSign,
   endSign,
+  formula_oneDimensionArray,
   formula_twoDimensionArray,
 }: Props) {
   return (
@@ -37,6 +39,7 @@ export default function ImageWithValue({
         twoDimensionArray={twoDimensionArray}
         startSign={startSign}
         endSign={endSign}
+        formula_oneDimensionArray={formula_oneDimensionArray}
         formula_twoDimensionArray={formula_twoDimensionArray}
       />
     </div>

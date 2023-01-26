@@ -6,6 +6,7 @@ import partialDerivative from "./images/partialDerivative.png";
 import A_Matrix from "./images/A_Matrix.png";
 import D1_Matrix from "./images/D-1_Matrix.png";
 import lambda_formula from "./images/lambda_formula.png";
+import psiAngle from "./images/psiAngle.png";
 
 import NavItem from "../src/components/NavItem";
 
@@ -42,6 +43,7 @@ import {
   calculateObservedCoordinates,
   convertMinutesToDMSFromMinutes,
   calculatePrioriErrors,
+  findPsiAngle,
 } from "./functions";
 import { SetStateAction, useState } from "react";
 import { MathType, round, transpose } from "mathjs";
@@ -156,7 +158,10 @@ interface DisplayingCalculatedData {
     b: number;
     a_meters: number;
     b_meters: number;
+    radialError: number;
   };
+  psiAngle: number;
+  psiAngleAndRadialErrorArr_Formula: string[];
 }
 
 type genericForFirstIteration = DisplayingCalculatedData | undefined;
@@ -382,6 +387,11 @@ function App() {
       { dgr: +data.DRLongDGR, mins: +data.DRLongMins, dir: data.DRLongDir }
     );
     let prioriErrorsObject = calculatePrioriErrors(N1_Matrix);
+    let psiAngle = findPsiAngle(prioriErrorsObject.firstLambda, N1_Matrix);
+    let psiAngleAndRadialErrorArr_Formula = [
+      `= ${psiAngle.toFixed(2)} °`,
+      `= ${prioriErrorsObject.radialError.toFixed(2)} м`,
+    ];
 
     let dataForFirstIterationObject = {
       initialValues: {
@@ -476,6 +486,8 @@ function App() {
       compassError,
       finalObservedCoordinates,
       prioriErrorsObject,
+      psiAngle,
+      psiAngleAndRadialErrorArr_Formula,
     };
     setDataForFirstIteration(dataForFirstIterationObject);
   };
@@ -736,13 +748,11 @@ function App() {
             oneDimensionArr={dataForFirstIteration.DRBearingsSet}
             withoutMatrixBorder
           />
-
           <h5>2. Формируем матрицу ∆U</h5>
           <ImageWithValue
             imageUrl={deltaU_img}
             oneDimensionArr={dataForFirstIteration.dU_Matrix}
           />
-
           <h5>3. Рассчитываем матрицу A.</h5>
           <h6>Находим частные производные по ∂x и ∂y и ∂z</h6>
           <img src={partialDerivative} alt="" />
@@ -758,7 +768,6 @@ function App() {
           <h5>
             5. Вычисляем промежуточную матрицу A<sup>T</sup>× D<sup>-1</sup>
           </h5>
-
           <Matrix
             twoDimensionArray={transpose(dataForFirstIteration.A_Matrix)}
             endMultiplySign
@@ -778,7 +787,6 @@ function App() {
             6. Вычисляем матрицу коэффициентов нормального уравнения N = A
             <sup>T</sup>× D<sup>-1</sup> × A
           </h5>
-
           <Matrix
             twoDimensionArray={JSON.parse(
               JSON.stringify(dataForFirstIteration?.AD_Matrix)
@@ -794,7 +802,6 @@ function App() {
             twoDimensionArray={dataForFirstIteration.N_Matrix}
             startEqualSign
           />
-
           <h5>
             7. Вычисляем ковариационную матрицу погрешностей обсервованных
             координат N<sup>-1</sup> = (A
@@ -808,7 +815,6 @@ function App() {
             twoDimensionArray={dataForFirstIteration.N1_Matrix}
             startSign=" N1 = "
           />
-
           <h5>
             8. Вычисляем матрицу (вектор) неизвестных: ∆ x = N<sup>-1</sup> × A
             <sup>T</sup> × D<sup>-1</sup> × ∆U =
@@ -882,9 +888,7 @@ function App() {
             Найдём собственные числа матрицы N1, а затем малую (b) и большую (a)
             полуоси эллипса погрешностей
           </h6>
-
           {/* change photo, there is incorrect formula */}
-
           <ImageWithValue
             imageUrl={lambda_formula}
             imageClassName={"lambda_formula"}
@@ -924,8 +928,18 @@ function App() {
             </table>
           </div>
           <h6>
-            Вычислим угол наклона большой полуоси относительно N-истинного
+            Вычислим угол наклона большой полуоси относительно N-истинного, а
+            также радиальную погрешность M
           </h6>
+
+          <ImageWithValue
+            imageUrl={psiAngle}
+            imageClassName={"psiAngle_formula"}
+            withoutMatrixBorder
+            formula_oneDimensionArray={
+              dataForFirstIteration.psiAngleAndRadialErrorArr_Formula
+            }
+          />
         </Box>
       )}
     </div>

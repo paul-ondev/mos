@@ -282,12 +282,21 @@ export const calculatePrioriErrors = (N1_Matrix: any) => {
     2;
   let a = Math.sqrt(firstLambda);
   let b = Math.sqrt(secondLambda);
+  let a_meters = a * 1852;
+  let b_meters = b * 1852;
   return {
     firstLambda,
     secondLambda,
     a,
     b,
-    a_meters: a * 1852,
-    b_meters: b * 1852,
+    a_meters,
+    b_meters,
+    radialError: Math.sqrt(a_meters ** 2 + b_meters ** 2),
   };
+};
+
+export const findPsiAngle = (firstLambda: number, N1_Matrix: any) => {
+  let angle = Math.atan((firstLambda - N1_Matrix[0][0]) / N1_Matrix[0][1]);
+  console.log(angle);
+  return angle > 0 ? radiansToDgr(angle) : 180 + radiansToDgr(angle);
 };
