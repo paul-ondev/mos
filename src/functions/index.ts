@@ -12,6 +12,7 @@ import {
   subset,
   transpose,
 } from "mathjs";
+import { DisplayingCalculatedData, inputData } from "../App";
 
 export const toMins = (dgr: number, mins: number): number => {
   return dgr * 60 + mins;
@@ -19,6 +20,7 @@ export const toMins = (dgr: number, mins: number): number => {
 
 export type latDirection = "n" | "N" | "s" | "S";
 export type longDirection = "w" | "W" | "e" | "E";
+export type whatIteration = "First Iteration" | "Second Iteration";
 
 export interface latObject {
   dgr: number;
@@ -256,47 +258,373 @@ export const convertMinutesToDMSFromMinutes = (minuets: number) => {
     degreesAndMinutesArray[1],
     1
   );
-  let seconds = minutesAndSecondsArray[1] * 60;
+  let seconds_RoundTo2 = minutesAndSecondsArray[1] * 60;
   return {
     dgr: degreesAndMinutesArray[0],
     mins: minutesAndSecondsArray[0],
-    seconds,
+    seconds_RoundTo2,
     isDirectionNorthOrEast,
   };
 };
 
 export const calculatePrioriErrors = (N1_Matrix: any) => {
-  let firstLambda =
+  let firstLambda_RoundTo6 =
     (N1_Matrix[0][0] +
       N1_Matrix[1][1] +
       Math.sqrt(
         (N1_Matrix[0][0] - N1_Matrix[1][1]) ** 2 + 4 * N1_Matrix[0][1] ** 2
       )) /
     2;
-  let secondLambda =
+  let secondLambda_RoundTo6 =
     (N1_Matrix[0][0] +
       N1_Matrix[1][1] -
       Math.sqrt(
         (N1_Matrix[0][0] - N1_Matrix[1][1]) ** 2 + 4 * N1_Matrix[0][1] ** 2
       )) /
     2;
-  let a = Math.sqrt(firstLambda);
-  let b = Math.sqrt(secondLambda);
-  let a_meters = a * 1852;
-  let b_meters = b * 1852;
+  let a_RoundTo6 = Math.sqrt(firstLambda_RoundTo6);
+  let b_RoundTo6 = Math.sqrt(secondLambda_RoundTo6);
+  let a_meters_RoundTo1 = a_RoundTo6 * 1852;
+  let b_meters_RoundTo1 = b_RoundTo6 * 1852;
   return {
-    firstLambda,
-    secondLambda,
-    a,
-    b,
-    a_meters,
-    b_meters,
-    radialError: Math.sqrt(a_meters ** 2 + b_meters ** 2),
+    firstLambda_RoundTo6,
+    secondLambda_RoundTo6,
+    a_RoundTo6,
+    b_RoundTo6,
+    a_meters_RoundTo1,
+    b_meters_RoundTo1,
+    radialError_RoundTo1: Math.sqrt(
+      a_meters_RoundTo1 ** 2 + b_meters_RoundTo1 ** 2
+    ),
   };
 };
 
-export const findPsiAngle = (firstLambda: number, N1_Matrix: any) => {
-  let angle = Math.atan((firstLambda - N1_Matrix[0][0]) / N1_Matrix[0][1]);
-  console.log(angle);
+export const findPsiAngle = (firstLambda_RoundTo6: number, N1_Matrix: any) => {
+  let angle = Math.atan(
+    (firstLambda_RoundTo6 - N1_Matrix[0][0]) / N1_Matrix[0][1]
+  );
   return angle > 0 ? radiansToDgr(angle) : 180 + radiansToDgr(angle);
+};
+
+export const calculateIterationData = (
+  data: inputData,
+  whatIteration: whatIteration,
+  dX_MatrixAfterFirstIteration?: any
+): DisplayingCalculatedData => {
+  // Departure and Latitude differences for the first iteration
+  let departureDiffOrient_1 = departureDiff(
+    {
+      dgr: +data.orientNumber1LongDGR,
+      mins: +data.orientNumber1LongMins,
+      dir: data.orientNumber1LongDir,
+    },
+    { dgr: +data.DRLongDGR, mins: +data.DRLongMins, dir: data.DRLongDir },
+    60
+  );
+  let latDiffOrient_1 = latDiff(
+    {
+      dgr: +data.orientNumber1LatDGR,
+      mins: +data.orientNumber1LatMins,
+      dir: data.orientNumber1LatDir,
+    },
+    {
+      dgr: +data.DRLatDGR,
+      mins: +data.DRLatMins,
+      dir: data.DRLatDir,
+    }
+  );
+
+  let departureDiffOrient_2 = departureDiff(
+    {
+      dgr: +data.orientNumber2LongDGR,
+      mins: +data.orientNumber2LongMins,
+      dir: data.orientNumber2LongDir,
+    },
+    { dgr: +data.DRLongDGR, mins: +data.DRLongMins, dir: data.DRLongDir },
+    60
+  );
+  let latDiffOrient_2 = latDiff(
+    {
+      dgr: +data.orientNumber2LatDGR,
+      mins: +data.orientNumber2LatMins,
+      dir: data.orientNumber2LatDir,
+    },
+    {
+      dgr: +data.DRLatDGR,
+      mins: +data.DRLatMins,
+      dir: data.DRLatDir,
+    }
+  );
+
+  let departureDiffOrient_3 = departureDiff(
+    {
+      dgr: +data.orientNumber3LongDGR,
+      mins: +data.orientNumber3LongMins,
+      dir: data.orientNumber3LongDir,
+    },
+    { dgr: +data.DRLongDGR, mins: +data.DRLongMins, dir: data.DRLongDir },
+    60
+  );
+  let latDiffOrient_3 = latDiff(
+    {
+      dgr: +data.orientNumber3LatDGR,
+      mins: +data.orientNumber3LatMins,
+      dir: data.orientNumber3LatDir,
+    },
+    {
+      dgr: +data.DRLatDGR,
+      mins: +data.DRLatMins,
+      dir: data.DRLatDir,
+    }
+  );
+
+  let departureDiffOrient_4 = departureDiff(
+    {
+      dgr: +data.orientNumber4LongDGR,
+      mins: +data.orientNumber4LongMins,
+      dir: data.orientNumber4LongDir,
+    },
+    { dgr: +data.DRLongDGR, mins: +data.DRLongMins, dir: data.DRLongDir },
+    60
+  );
+  let latDiffOrient_4 = latDiff(
+    {
+      dgr: +data.orientNumber4LatDGR,
+      mins: +data.orientNumber4LatMins,
+      dir: data.orientNumber4LatDir,
+    },
+    {
+      dgr: +data.DRLatDGR,
+      mins: +data.DRLatMins,
+      dir: data.DRLatDir,
+    }
+  );
+
+  let DRBearingsSet_Matrix = [0, 0, 0, 0];
+
+  if (whatIteration === "First Iteration") {
+    DRBearingsSet_Matrix = [
+      DRBearing(departureDiffOrient_1, latDiffOrient_1),
+      DRBearing(departureDiffOrient_2, latDiffOrient_2),
+      DRBearing(departureDiffOrient_3, latDiffOrient_3),
+      DRBearing(departureDiffOrient_4, latDiffOrient_4),
+    ];
+  }
+  if (whatIteration === "Second Iteration") {
+    DRBearingsSet_Matrix = [
+      DRBearing(
+        departureDiffOrient_1 - dX_MatrixAfterFirstIteration[1],
+        latDiffOrient_1 - dX_MatrixAfterFirstIteration[0]
+      ) + dX_MatrixAfterFirstIteration[2],
+      DRBearing(
+        departureDiffOrient_2 - dX_MatrixAfterFirstIteration[1],
+        latDiffOrient_2 - dX_MatrixAfterFirstIteration[0]
+      ) + dX_MatrixAfterFirstIteration[2],
+      DRBearing(
+        departureDiffOrient_3 - dX_MatrixAfterFirstIteration[1],
+        latDiffOrient_3 - dX_MatrixAfterFirstIteration[0]
+      ) + dX_MatrixAfterFirstIteration[2],
+      DRBearing(
+        departureDiffOrient_4 - dX_MatrixAfterFirstIteration[1],
+        latDiffOrient_4 - dX_MatrixAfterFirstIteration[0]
+      ) + dX_MatrixAfterFirstIteration[2],
+    ];
+  }
+
+  let dU_Matrix = createDeltaUMatrix(
+    [dgrToRadians(+data.orientNumber1Bearing), DRBearingsSet_Matrix[0]],
+    [dgrToRadians(+data.orientNumber2Bearing), DRBearingsSet_Matrix[1]],
+    [dgrToRadians(+data.orientNumber3Bearing), DRBearingsSet_Matrix[2]],
+    [dgrToRadians(+data.orientNumber4Bearing), DRBearingsSet_Matrix[3]]
+  );
+  let invertedD_Matrix = createInvertedD_Matrix();
+  let A_Matrix = createAMatrix(
+    [departureDiffOrient_1, latDiffOrient_1],
+    [departureDiffOrient_2, latDiffOrient_2],
+    [departureDiffOrient_3, latDiffOrient_3],
+    [departureDiffOrient_4, latDiffOrient_4]
+  );
+  let AD_Matrix = multiplyTransposedA_MatrixAndInvertedD_Matrix(
+    A_Matrix,
+    invertedD_Matrix
+  );
+  let N_Matrix = findN_matrix(AD_Matrix, A_Matrix);
+  let ADU_Matrix = multiplyTransposedA_MatrixAndInvertedD_MatrixOnDeltaU_Matrix(
+    AD_Matrix,
+    dU_Matrix
+  );
+
+  let invertedN_Matrix = toInverseN_Matrix(N_Matrix);
+  let N1_Matrix = createN1_Matrix(invertedN_Matrix);
+  let dX_Matrix = createDeltaX_Matrix(invertedN_Matrix, ADU_Matrix);
+  let compassError_RoundTo6 = calculateCompassError(dX_Matrix);
+  let finalObservedCoordinates = calculateObservedCoordinates(
+    dX_Matrix,
+    { dgr: +data.DRLatDGR, mins: +data.DRLatMins, dir: data.DRLatDir },
+    { dgr: +data.DRLongDGR, mins: +data.DRLongMins, dir: data.DRLongDir }
+  );
+  let prioriErrors = calculatePrioriErrors(N1_Matrix);
+  let psiAngle = findPsiAngle(prioriErrors.firstLambda_RoundTo6, N1_Matrix);
+  let psiAngleAndRadialErrorArr_Formula = [
+    `= ${psiAngle.toFixed(2)} °`,
+    `= ${prioriErrors.radialError_RoundTo1.toFixed(2)} м`,
+  ];
+
+  let dataForIterationObject = {
+    initialValues: {
+      DRPosition: {
+        lat: {
+          dgr: data.DRLatDGR,
+          mins: data.DRLatMins,
+          dir: data.DRLatDir,
+        },
+        long: {
+          dgr: data.DRLongDGR,
+          mins: data.DRLongMins,
+          dir: data.DRLongDir,
+        },
+      },
+      first: {
+        lat: {
+          dgr: data.orientNumber1LatDGR,
+          mins: data.orientNumber1LatMins,
+          dir: data.orientNumber1LatDir,
+        },
+        long: {
+          dgr: data.orientNumber1LongDGR,
+          mins: data.orientNumber1LongMins,
+          dir: data.orientNumber1LongDir,
+        },
+        bearing: data.orientNumber1Bearing,
+      },
+      second: {
+        lat: {
+          dgr: data.orientNumber2LatDGR,
+          mins: data.orientNumber2LatMins,
+          dir: data.orientNumber2LatDir,
+        },
+        long: {
+          dgr: data.orientNumber2LongDGR,
+          mins: data.orientNumber2LongMins,
+          dir: data.orientNumber2LongDir,
+        },
+        bearing: data.orientNumber2Bearing,
+      },
+      third: {
+        lat: {
+          dgr: data.orientNumber3LatDGR,
+          mins: data.orientNumber3LatMins,
+          dir: data.orientNumber3LatDir,
+        },
+        long: {
+          dgr: data.orientNumber3LongDGR,
+          mins: data.orientNumber3LongMins,
+          dir: data.orientNumber3LongDir,
+        },
+        bearing: data.orientNumber3Bearing,
+      },
+      fourth: {
+        lat: {
+          dgr: data.orientNumber4LatDGR,
+          mins: data.orientNumber4LatMins,
+          dir: data.orientNumber4LatDir,
+        },
+        long: {
+          dgr: data.orientNumber4LongDGR,
+          mins: data.orientNumber4LongMins,
+          dir: data.orientNumber4LongDir,
+        },
+        bearing: data.orientNumber4Bearing,
+      },
+    },
+    latDiff: [
+      latDiffOrient_1,
+      latDiffOrient_2,
+      latDiffOrient_3,
+      latDiffOrient_4,
+    ],
+    departureDiff: [
+      departureDiffOrient_1,
+      departureDiffOrient_2,
+      departureDiffOrient_3,
+      departureDiffOrient_4,
+    ],
+    DRBearingsSet_Matrix,
+
+    dU_Matrix,
+    A_Matrix,
+    invertedD_Matrix,
+    AD_Matrix: AD_Matrix,
+    N_Matrix,
+    ADU_Matrix,
+    invertedN_Matrix,
+    N1_Matrix,
+    dX_Matrix,
+    compassError_RoundTo6,
+    finalObservedCoordinates,
+    prioriErrors,
+    psiAngle,
+    psiAngleAndRadialErrorArr_Formula,
+  };
+  return dataForIterationObject;
+};
+
+function roundIterationObject_MatrixValues(data: any) {
+  const roundedData = JSON.parse(JSON.stringify(data));
+  const keys = Object.keys(roundedData);
+
+  keys.forEach((key) => {
+    if (key.includes("_Matrix")) {
+      if (Array.isArray(roundedData[key])) {
+        roundedData[key] = roundedData[key].map((val: any) => {
+          if (Array.isArray(val)) {
+            return val.map((nestedVal: any) => {
+              if (typeof nestedVal === "number") return nestedVal.toFixed(6);
+              else if (Array.isArray(nestedVal))
+                return roundIterationObject_MatrixValues(nestedVal);
+              else return nestedVal;
+            });
+          }
+
+          if (typeof val === "number") return val.toFixed(6);
+          else return val;
+        });
+      }
+
+      if (typeof roundedData[key] === "number") {
+        roundedData[key] = roundedData[key].toFixed(6);
+      }
+    }
+  });
+  return roundedData;
+}
+
+function roundObject_RoundToValues(
+  data: DisplayingCalculatedData
+): DisplayingCalculatedData {
+  const roundedData = JSON.parse(JSON.stringify(data));
+
+  function roundValues(obj: any) {
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        if (typeof obj[key] === "object") {
+          roundValues(obj[key]);
+        } else if (typeof obj[key] === "number" && key.includes("_RoundTo6")) {
+          obj[key] = +obj[key].toFixed(6);
+        } else if (typeof obj[key] === "number" && key.includes("_RoundTo2")) {
+          obj[key] = +obj[key].toFixed(2);
+        } else if (typeof obj[key] === "number" && key.includes("_RoundTo1")) {
+          obj[key] = +obj[key].toFixed(1);
+        }
+      }
+    }
+  }
+
+  roundValues(roundedData);
+  return roundedData;
+}
+
+export const roundIterationObjectValues = (data: DisplayingCalculatedData) => {
+  let matrixesRounded = roundIterationObject_MatrixValues(data);
+  return roundObject_RoundToValues(matrixesRounded);
 };

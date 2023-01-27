@@ -21,31 +21,14 @@ import { styled } from "@mui/material/styles";
 import Card from "@mui/material/Card";
 import Button from "@mui/material/Button";
 import {
-  createAMatrix,
-  createInvertedD_Matrix,
-  createDeltaUMatrix,
-  departureDiff,
-  dgrToRadians,
-  DRBearing,
-  findN_matrix,
-  latDiff,
-  multiplyTransposedA_MatrixAndInvertedD_Matrix,
-  multiplyTransposedA_MatrixAndInvertedD_MatrixOnDeltaU_Matrix,
-  createDeltaX_Matrix,
-  calculateCompassError,
   latDirection,
   longDirection,
   latObject,
   longObject,
-  multiplyN_MatrixAndAD_Matrix,
-  toInverseN_Matrix,
-  createN1_Matrix,
-  calculateObservedCoordinates,
-  convertMinutesToDMSFromMinutes,
-  calculatePrioriErrors,
-  findPsiAngle,
+  calculateIterationData,
+  roundIterationObjectValues,
 } from "./functions";
-import { SetStateAction, useState } from "react";
+import { useState } from "react";
 import { MathType, round, transpose } from "mathjs";
 
 import {
@@ -59,7 +42,7 @@ import {
 import ImageWithValue from "./components/ImageWithValue";
 import Matrix from "./components/Matrix";
 
-interface inputData {
+export interface inputData {
   DRLatDGR: number;
   DRLatDir: latDirection;
   DRLatMins: number;
@@ -96,7 +79,7 @@ interface inputData {
   orientNumber4LongMins: number;
 }
 
-interface DisplayingCalculatedData {
+export interface DisplayingCalculatedData {
   initialValues: {
     DRPosition: {
       lat: latObject;
@@ -125,7 +108,7 @@ interface DisplayingCalculatedData {
   };
   latDiff: number[];
   departureDiff: number[];
-  DRBearingsSet: number[];
+  DRBearingsSet_Matrix: number[];
   dU_Matrix: number[];
   A_Matrix: number[][];
   invertedD_Matrix: math.Matrix;
@@ -136,29 +119,29 @@ interface DisplayingCalculatedData {
   invertedN_Matrix: math.Matrix;
   N1_Matrix: math.Matrix;
   dX_Matrix: math.Matrix | MathType | number;
-  compassError: number;
+  compassError_RoundTo6: number;
   finalObservedCoordinates: {
     lat: {
       dgr: number;
       mins: number;
-      seconds: number;
+      seconds_RoundTo2: number;
       isDirectionNorthOrEast: boolean;
     };
     lon: {
       dgr: number;
       mins: number;
-      seconds: number;
+      seconds_RoundTo2: number;
       isDirectionNorthOrEast: boolean;
     };
   };
-  prioriErrorsObject: {
-    firstLambda: number;
-    secondLambda: number;
-    a: number;
-    b: number;
-    a_meters: number;
-    b_meters: number;
-    radialError: number;
+  prioriErrors: {
+    firstLambda_RoundTo6: number;
+    secondLambda_RoundTo6: number;
+    a_RoundTo6: number;
+    b_RoundTo6: number;
+    a_meters_RoundTo1: number;
+    b_meters_RoundTo1: number;
+    radialError_RoundTo1: number;
   };
   psiAngle: number;
   psiAngleAndRadialErrorArr_Formula: string[];
@@ -258,240 +241,23 @@ function App() {
     useState<genericForFirstIteration>(undefined);
 
   const onSubmit = (data: any) => {
-    let departureDiffOrient_1 = departureDiff(
-      {
-        dgr: +data.orientNumber1LongDGR,
-        mins: +data.orientNumber1LongMins,
-        dir: data.orientNumber1LongDir,
-      },
-      { dgr: +data.DRLongDGR, mins: +data.DRLongMins, dir: data.DRLongDir },
-      60
-    );
-    let latDiffOrient_1 = latDiff(
-      {
-        dgr: +data.orientNumber1LatDGR,
-        mins: +data.orientNumber1LatMins,
-        dir: data.orientNumber1LatDir,
-      },
-      {
-        dgr: +data.DRLatDGR,
-        mins: +data.DRLatMins,
-        dir: data.DRLatDir,
-      }
+    let dataForFirstIterationObject = calculateIterationData(
+      data,
+      "First Iteration"
     );
 
-    let departureDiffOrient_2 = departureDiff(
-      {
-        dgr: +data.orientNumber2LongDGR,
-        mins: +data.orientNumber2LongMins,
-        dir: data.orientNumber2LongDir,
-      },
-      { dgr: +data.DRLongDGR, mins: +data.DRLongMins, dir: data.DRLongDir },
-      60
+    let dataForFirstIterationRoundedObject = roundIterationObjectValues(
+      dataForFirstIterationObject
     );
-    let latDiffOrient_2 = latDiff(
-      {
-        dgr: +data.orientNumber2LatDGR,
-        mins: +data.orientNumber2LatMins,
-        dir: data.orientNumber2LatDir,
-      },
-      {
-        dgr: +data.DRLatDGR,
-        mins: +data.DRLatMins,
-        dir: data.DRLatDir,
-      }
-    );
+    setDataForFirstIteration(dataForFirstIterationRoundedObject);
 
-    let departureDiffOrient_3 = departureDiff(
-      {
-        dgr: +data.orientNumber3LongDGR,
-        mins: +data.orientNumber3LongMins,
-        dir: data.orientNumber3LongDir,
-      },
-      { dgr: +data.DRLongDGR, mins: +data.DRLongMins, dir: data.DRLongDir },
-      60
+    let dataForSecondIterationObject = calculateIterationData(
+      data,
+      "Second Iteration",
+      dataForFirstIterationObject.dX_Matrix
     );
-    let latDiffOrient_3 = latDiff(
-      {
-        dgr: +data.orientNumber3LatDGR,
-        mins: +data.orientNumber3LatMins,
-        dir: data.orientNumber3LatDir,
-      },
-      {
-        dgr: +data.DRLatDGR,
-        mins: +data.DRLatMins,
-        dir: data.DRLatDir,
-      }
-    );
-
-    let departureDiffOrient_4 = departureDiff(
-      {
-        dgr: +data.orientNumber4LongDGR,
-        mins: +data.orientNumber4LongMins,
-        dir: data.orientNumber4LongDir,
-      },
-      { dgr: +data.DRLongDGR, mins: +data.DRLongMins, dir: data.DRLongDir },
-      60
-    );
-    let latDiffOrient_4 = latDiff(
-      {
-        dgr: +data.orientNumber4LatDGR,
-        mins: +data.orientNumber4LatMins,
-        dir: data.orientNumber4LatDir,
-      },
-      {
-        dgr: +data.DRLatDGR,
-        mins: +data.DRLatMins,
-        dir: data.DRLatDir,
-      }
-    );
-
-    let DRBearingsSet = [
-      DRBearing(departureDiffOrient_1, latDiffOrient_1),
-      DRBearing(departureDiffOrient_2, latDiffOrient_2),
-      DRBearing(departureDiffOrient_3, latDiffOrient_3),
-      DRBearing(departureDiffOrient_4, latDiffOrient_4),
-    ];
-
-    let dU_Matrix = createDeltaUMatrix(
-      [dgrToRadians(+data.orientNumber1Bearing), DRBearingsSet[0]],
-      [dgrToRadians(+data.orientNumber2Bearing), DRBearingsSet[1]],
-      [dgrToRadians(+data.orientNumber3Bearing), DRBearingsSet[2]],
-      [dgrToRadians(+data.orientNumber4Bearing), DRBearingsSet[3]]
-    );
-    let invertedD_Matrix = createInvertedD_Matrix();
-    let A_Matrix = createAMatrix(
-      [departureDiffOrient_1, latDiffOrient_1],
-      [departureDiffOrient_2, latDiffOrient_2],
-      [departureDiffOrient_3, latDiffOrient_3],
-      [departureDiffOrient_4, latDiffOrient_4]
-    );
-    let AD_Matrix = multiplyTransposedA_MatrixAndInvertedD_Matrix(
-      A_Matrix,
-      invertedD_Matrix
-    );
-    let N_Matrix = findN_matrix(AD_Matrix, A_Matrix);
-    let ADU_Matrix =
-      multiplyTransposedA_MatrixAndInvertedD_MatrixOnDeltaU_Matrix(
-        AD_Matrix,
-        dU_Matrix
-      );
-
-    let invertedN_Matrix = toInverseN_Matrix(N_Matrix);
-    let N1_Matrix = createN1_Matrix(invertedN_Matrix);
-    let dX_Matrix = createDeltaX_Matrix(invertedN_Matrix, ADU_Matrix);
-    let compassError = calculateCompassError(dX_Matrix);
-    let finalObservedCoordinates = calculateObservedCoordinates(
-      dX_Matrix,
-      { dgr: +data.DRLatDGR, mins: +data.DRLatMins, dir: data.DRLatDir },
-      { dgr: +data.DRLongDGR, mins: +data.DRLongMins, dir: data.DRLongDir }
-    );
-    let prioriErrorsObject = calculatePrioriErrors(N1_Matrix);
-    let psiAngle = findPsiAngle(prioriErrorsObject.firstLambda, N1_Matrix);
-    let psiAngleAndRadialErrorArr_Formula = [
-      `= ${psiAngle.toFixed(2)} °`,
-      `= ${prioriErrorsObject.radialError.toFixed(2)} м`,
-    ];
-
-    let dataForFirstIterationObject = {
-      initialValues: {
-        DRPosition: {
-          lat: {
-            dgr: data.DRLatDGR,
-            mins: data.DRLatMins,
-            dir: data.DRLatDir,
-          },
-          long: {
-            dgr: data.DRLongDGR,
-            mins: data.DRLongMins,
-            dir: data.DRLongDir,
-          },
-        },
-        first: {
-          lat: {
-            dgr: data.orientNumber1LatDGR,
-            mins: data.orientNumber1LatMins,
-            dir: data.orientNumber1LatDir,
-          },
-          long: {
-            dgr: data.orientNumber1LongDGR,
-            mins: data.orientNumber1LongMins,
-            dir: data.orientNumber1LongDir,
-          },
-          bearing: data.orientNumber1Bearing,
-        },
-        second: {
-          lat: {
-            dgr: data.orientNumber2LatDGR,
-            mins: data.orientNumber2LatMins,
-            dir: data.orientNumber2LatDir,
-          },
-          long: {
-            dgr: data.orientNumber2LongDGR,
-            mins: data.orientNumber2LongMins,
-            dir: data.orientNumber2LongDir,
-          },
-          bearing: data.orientNumber2Bearing,
-        },
-        third: {
-          lat: {
-            dgr: data.orientNumber3LatDGR,
-            mins: data.orientNumber3LatMins,
-            dir: data.orientNumber3LatDir,
-          },
-          long: {
-            dgr: data.orientNumber3LongDGR,
-            mins: data.orientNumber3LongMins,
-            dir: data.orientNumber3LongDir,
-          },
-          bearing: data.orientNumber3Bearing,
-        },
-        fourth: {
-          lat: {
-            dgr: data.orientNumber4LatDGR,
-            mins: data.orientNumber4LatMins,
-            dir: data.orientNumber4LatDir,
-          },
-          long: {
-            dgr: data.orientNumber4LongDGR,
-            mins: data.orientNumber4LongMins,
-            dir: data.orientNumber4LongDir,
-          },
-          bearing: data.orientNumber4Bearing,
-        },
-      },
-      latDiff: [
-        latDiffOrient_1,
-        latDiffOrient_2,
-        latDiffOrient_3,
-        latDiffOrient_4,
-      ],
-      departureDiff: [
-        departureDiffOrient_1,
-        departureDiffOrient_2,
-        departureDiffOrient_3,
-        departureDiffOrient_4,
-      ],
-      DRBearingsSet,
-
-      dU_Matrix,
-      A_Matrix,
-      invertedD_Matrix,
-      AD_Matrix: AD_Matrix,
-      N_Matrix,
-      ADU_Matrix,
-      invertedN_Matrix,
-      N1_Matrix,
-      dX_Matrix,
-      compassError,
-      finalObservedCoordinates,
-      prioriErrorsObject,
-      psiAngle,
-      psiAngleAndRadialErrorArr_Formula,
-    };
-    setDataForFirstIteration(dataForFirstIterationObject);
   };
-  // console.log(dataForFirstIteration?.finalObservedCoordinates);
+
   let N1_Matrix_Formula = [
     ["n11", "n12"],
     ["n21", "n22"],
@@ -591,11 +357,8 @@ function App() {
           </Button>
         </ButtonCard>
       </form>
-      {dataForFirstIteration?.compassError && (
+      {dataForFirstIteration?.compassError_RoundTo6 && (
         <Box mt={6}>
-          <Typography variant="h3" mt={2} mb={3}>
-            Первая итерация
-          </Typography>
           <Typography>Исходные данные</Typography>
           <TableContainer component={Paper}>
             <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -742,10 +505,14 @@ function App() {
               </TableBody>
             </Table>
           </TableContainer>
+
+          <Typography variant="h3" mt={2} mb={3}>
+            Первая итерация
+          </Typography>
           <h5>1. Найдём счислимые пеленга</h5>
           <ImageWithValue
             imageUrl={DRbearings_img}
-            oneDimensionArr={dataForFirstIteration.DRBearingsSet}
+            oneDimensionArr={dataForFirstIteration.DRBearingsSet_Matrix}
             withoutMatrixBorder
           />
           <h5>2. Формируем матрицу ∆U</h5>
@@ -842,7 +609,9 @@ function App() {
             )}
             startEqualSign
           />
-          <h6>Поправка компаса = {dataForFirstIteration.compassError} °</h6>
+          <h6>
+            Поправка компаса = {dataForFirstIteration.compassError_RoundTo6} °
+          </h6>
           <h5>9. Рассчитаем параметры обсервации</h5>
           <div className="finalFirstIterationValues">
             <div>
@@ -853,9 +622,8 @@ function App() {
                   "°  " +
                   dataForFirstIteration.finalObservedCoordinates.lat.mins +
                   "'  " +
-                  dataForFirstIteration.finalObservedCoordinates.lat.seconds.toFixed(
-                    2
-                  ) +
+                  dataForFirstIteration.finalObservedCoordinates.lat
+                    .seconds_RoundTo2 +
                   '"  ' +
                   (dataForFirstIteration.finalObservedCoordinates.lat
                     .isDirectionNorthOrEast
@@ -870,9 +638,8 @@ function App() {
                   "°  " +
                   dataForFirstIteration.finalObservedCoordinates.lon.mins +
                   "'  " +
-                  dataForFirstIteration.finalObservedCoordinates.lon.seconds.toFixed(
-                    2
-                  ) +
+                  dataForFirstIteration.finalObservedCoordinates.lon
+                    .seconds_RoundTo2 +
                   '"  ' +
                   (dataForFirstIteration.finalObservedCoordinates.lon
                     .isDirectionNorthOrEast
@@ -888,7 +655,7 @@ function App() {
             Найдём собственные числа матрицы N1, а затем малую (b) и большую (a)
             полуоси эллипса погрешностей
           </h6>
-          {/* change photo, there is incorrect formula */}
+
           <ImageWithValue
             imageUrl={lambda_formula}
             imageClassName={"lambda_formula"}
@@ -900,28 +667,33 @@ function App() {
               <tbody>
                 <tr>
                   <td>
-                    λ1 = {dataForFirstIteration.prioriErrorsObject?.firstLambda}
+                    λ1 ={" "}
+                    {dataForFirstIteration.prioriErrors?.firstLambda_RoundTo6}
                   </td>
                   <td>
-                    a = √λ1 = {dataForFirstIteration.prioriErrorsObject.a} x
+                    a = √λ1 = {dataForFirstIteration.prioriErrors.a_RoundTo6} x
                     1852 метра
                   </td>
                   <td>
                     {" "}
-                    = {dataForFirstIteration.prioriErrorsObject.a_meters} метров
+                    = {
+                      dataForFirstIteration.prioriErrors.a_meters_RoundTo1
+                    }{" "}
+                    метров
                   </td>
                 </tr>
                 <tr>
                   <td>
                     λ2 ={" "}
-                    {dataForFirstIteration.prioriErrorsObject?.secondLambda}
+                    {dataForFirstIteration.prioriErrors?.secondLambda_RoundTo6}
                   </td>
                   <td>
-                    b = √λ2 = {dataForFirstIteration.prioriErrorsObject.b} x
+                    b = √λ2 = {dataForFirstIteration.prioriErrors.b_RoundTo6} x
                     1852 метра
                   </td>
                   <td>
-                    = {dataForFirstIteration.prioriErrorsObject.b_meters} метров
+                    = {dataForFirstIteration.prioriErrors.b_meters_RoundTo1}{" "}
+                    метров
                   </td>
                 </tr>
               </tbody>
