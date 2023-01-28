@@ -5,9 +5,9 @@ import { DisplayingCalculatedData } from "../../App";
 import ImageWithValue from "../ImageWithValue";
 import Matrix from "../Matrix";
 
-import DRbearings_img from "./../../images/DRbearings.png";
+import DRbearings_img from "./../../images/DRbearings1.png";
 import deltaU_img from "./../../images/deltaU.png";
-import partialDerivative from "./../../images/partialDerivative.png";
+import partialDifferential from "./../../images/partialDifferential.png";
 import A_Matrix from "./../../images/A_Matrix.png";
 import D1_Matrix from "./../../images/D-1_Matrix.png";
 import lambda_formula from "./../../images/lambda_formula.png";
@@ -49,7 +49,7 @@ export default function IterationData({
       />
       <h5>3. Рассчитываем матрицу A.</h5>
       <h6>Находим частные производные по ∂x и ∂y и ∂z</h6>
-      <img src={partialDerivative} alt="" />
+      <img src={partialDifferential} alt="" />
       <h6>Формируем матрицу A</h6>
       <ImageWithValue
         imageUrl={A_Matrix}

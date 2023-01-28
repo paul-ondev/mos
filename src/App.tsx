@@ -144,7 +144,7 @@ export interface DisplayingCalculatedData {
   };
 }
 
-type genericForFirstIteration = DisplayingCalculatedData | undefined;
+type genericForIteration = DisplayingCalculatedData | undefined;
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: theme.palette.mode === "dark" ? "#1A2027" : "#fff",
@@ -235,7 +235,10 @@ function App() {
   const { register, handleSubmit } = useForm();
 
   const [dataForFirstIteration, setDataForFirstIteration] =
-    useState<genericForFirstIteration>(undefined);
+    useState<genericForIteration>(undefined);
+
+  const [dataForSecondIteration, setDataForSecondIteration] =
+    useState<any>(undefined);
 
   const onSubmit = (data: any) => {
     let dataForFirstIterationObject = calculateIterationData(
@@ -253,7 +256,13 @@ function App() {
       "Second Iteration",
       dataForFirstIterationObject.dX_Matrix
     );
+    let dataForSecondIterationRoundedObject = roundIterationObjectValues(
+      dataForSecondIterationObject
+    );
+    setDataForSecondIteration(dataForSecondIterationRoundedObject);
   };
+  // console.log(Object.keys(JSON.parse(JSON.stringify(dataForFirstIteration))));
+  // console.log(Object.keys(JSON.parse(JSON.stringify(dataForSecondIteration))));
 
   return (
     <div className="App">
@@ -502,6 +511,10 @@ function App() {
           <IterationData
             dataForIteration={dataForFirstIteration}
             isFirstIteration={true}
+          />
+          <IterationData
+            dataForIteration={dataForSecondIteration}
+            isFirstIteration={false}
           />
         </Box>
       )}

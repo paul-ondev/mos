@@ -179,34 +179,6 @@ export const calculateCompassError = (deltaX_Matrix: any) => {
   return radiansToDgr(deltaX_Matrix[2]);
 };
 
-// export const calculateObservedCoordinates = (
-//   dX_Matrix: any,
-//   DRLatObject: latObject,
-//   DRLongObject: longObject
-// ) => {
-//   let result = [];
-//   let DRLatInMins = toMins(DRLatObject.dgr, DRLatObject.mins);
-
-//   DRLatInMins =
-//     DRLatObject.dir === "n" || DRLatObject.dir === "N"
-//       ? DRLatInMins
-//       : -DRLatInMins;
-
-//   result.push(DRLatInMins + radiansToDgr(dX_Matrix[0]) / 60);
-
-//   let DRLongInMins = toMins(DRLongObject.dgr, DRLongObject.mins);
-//   DRLongInMins =
-//     DRLongObject.dir === "e" || DRLongObject.dir === "E"
-//       ? DRLongInMins
-//       : -DRLongInMins;
-
-//   result.push(
-//     DRLongInMins + (radiansToDgr(dX_Matrix[1]) / 60) * sec(dgrToRadians(60))
-//   );
-
-//   return result;
-// };
-
 export const calculateObservedCoordinates = (
   dX_Matrix: any,
   DRLatObject: latObject,
@@ -451,12 +423,36 @@ export const calculateIterationData = (
     [dgrToRadians(+data.orientNumber4Bearing), DRBearingsSet_Matrix[3]]
   );
   let invertedD_Matrix = createInvertedD_Matrix();
-  let A_Matrix = createAMatrix(
-    [departureDiffOrient_1, latDiffOrient_1],
-    [departureDiffOrient_2, latDiffOrient_2],
-    [departureDiffOrient_3, latDiffOrient_3],
-    [departureDiffOrient_4, latDiffOrient_4]
-  );
+  let A_Matrix = [[0]];
+  if (whatIteration === "First Iteration") {
+    A_Matrix = createAMatrix(
+      [departureDiffOrient_1, latDiffOrient_1],
+      [departureDiffOrient_2, latDiffOrient_2],
+      [departureDiffOrient_3, latDiffOrient_3],
+      [departureDiffOrient_4, latDiffOrient_4]
+    );
+  }
+  if (whatIteration === "Second Iteration") {
+    A_Matrix = createAMatrix(
+      [
+        departureDiffOrient_1 - dX_MatrixAfterFirstIteration[1],
+        latDiffOrient_1 - dX_MatrixAfterFirstIteration[0],
+      ],
+      [
+        departureDiffOrient_2 - dX_MatrixAfterFirstIteration[1],
+        latDiffOrient_2 - dX_MatrixAfterFirstIteration[0],
+      ],
+      [
+        departureDiffOrient_3 - dX_MatrixAfterFirstIteration[1],
+        latDiffOrient_3 - dX_MatrixAfterFirstIteration[0],
+      ],
+      [
+        departureDiffOrient_4 - dX_MatrixAfterFirstIteration[1],
+        latDiffOrient_4 - dX_MatrixAfterFirstIteration[0],
+      ]
+    );
+  }
+
   let AD_Matrix = multiplyTransposedA_MatrixAndInvertedD_Matrix(
     A_Matrix,
     invertedD_Matrix
