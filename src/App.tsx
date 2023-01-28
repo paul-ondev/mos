@@ -1,13 +1,5 @@
 import "./App.css";
 
-import DRbearings_img from "./images/DRbearings.png";
-import deltaU_img from "./images/deltaU.png";
-import partialDerivative from "./images/partialDerivative.png";
-import A_Matrix from "./images/A_Matrix.png";
-import D1_Matrix from "./images/D-1_Matrix.png";
-import lambda_formula from "./images/lambda_formula.png";
-import psiAngle from "./images/psiAngle.png";
-
 import NavItem from "../src/components/NavItem";
 
 import Box from "@mui/material/Box";
@@ -41,6 +33,7 @@ import {
 } from "@mui/material";
 import ImageWithValue from "./components/ImageWithValue";
 import Matrix from "./components/Matrix";
+import IterationData from "./components/IterationData";
 
 export interface inputData {
   DRLatDGR: number;
@@ -145,6 +138,10 @@ export interface DisplayingCalculatedData {
   };
   psiAngle: number;
   psiAngleAndRadialErrorArr_Formula: string[];
+  discrepancyObj: {
+    angle_RoundTo1: number;
+    value_RoundTo6: number;
+  };
 }
 
 type genericForFirstIteration = DisplayingCalculatedData | undefined;
@@ -258,10 +255,6 @@ function App() {
     );
   };
 
-  let N1_Matrix_Formula = [
-    ["n11", "n12"],
-    ["n21", "n22"],
-  ];
   return (
     <div className="App">
       <Box sx={{ flexGrow: 0.7, backgroundColor: "rgb(157 143 143 / 60%)" }}>
@@ -506,211 +499,9 @@ function App() {
             </Table>
           </TableContainer>
 
-          <Typography variant="h3" mt={2} mb={3}>
-            Первая итерация
-          </Typography>
-          <h5>1. Найдём счислимые пеленга</h5>
-          <ImageWithValue
-            imageUrl={DRbearings_img}
-            oneDimensionArr={dataForFirstIteration.DRBearingsSet_Matrix}
-            withoutMatrixBorder
-          />
-          <h5>2. Формируем матрицу ∆U</h5>
-          <ImageWithValue
-            imageUrl={deltaU_img}
-            oneDimensionArr={dataForFirstIteration.dU_Matrix}
-          />
-          <h5>3. Рассчитываем матрицу A.</h5>
-          <h6>Находим частные производные по ∂x и ∂y и ∂z</h6>
-          <img src={partialDerivative} alt="" />
-          <h6>Формируем матрицу A</h6>
-          <ImageWithValue
-            imageUrl={A_Matrix}
-            twoDimensionArray={dataForFirstIteration.A_Matrix}
-          />
-          <h5>
-            4. Вычисляем весовую матрицу D<sup>-1</sup>
-          </h5>
-          <img src={D1_Matrix} alt="" />
-          <h5>
-            5. Вычисляем промежуточную матрицу A<sup>T</sup>× D<sup>-1</sup>
-          </h5>
-          <Matrix
-            twoDimensionArray={transpose(dataForFirstIteration.A_Matrix)}
-            endMultiplySign
-          />
-          <Matrix
-            twoDimensionArray={dataForFirstIteration.invertedD_Matrix}
-            startMultiplySign
-            endEqualSign
-          />
-          <Matrix
-            twoDimensionArray={JSON.parse(
-              JSON.stringify(dataForFirstIteration?.AD_Matrix)
-            )}
-            startEqualSign
-          />
-          <h5>
-            6. Вычисляем матрицу коэффициентов нормального уравнения N = A
-            <sup>T</sup>× D<sup>-1</sup> × A
-          </h5>
-          <Matrix
-            twoDimensionArray={JSON.parse(
-              JSON.stringify(dataForFirstIteration?.AD_Matrix)
-            )}
-            endMultiplySign
-          />
-          <Matrix
-            twoDimensionArray={dataForFirstIteration.A_Matrix}
-            startMultiplySign
-            endEqualSign
-          />
-          <Matrix
-            twoDimensionArray={dataForFirstIteration.N_Matrix}
-            startEqualSign
-          />
-          <h5>
-            7. Вычисляем ковариационную матрицу погрешностей обсервованных
-            координат N<sup>-1</sup> = (A
-            <sup>T</sup>× D<sup>-1</sup> × A)<sup>-1</sup> =
-          </h5>
-          <Matrix
-            twoDimensionArray={dataForFirstIteration.invertedN_Matrix}
-            startEqualSign
-          />
-          <Matrix
-            twoDimensionArray={dataForFirstIteration.N1_Matrix}
-            startSign=" N1 = "
-          />
-          <h5>
-            8. Вычисляем матрицу (вектор) неизвестных: ∆ x = N<sup>-1</sup> × A
-            <sup>T</sup> × D<sup>-1</sup> × ∆U =
-          </h5>
-          <Matrix
-            twoDimensionArray={dataForFirstIteration.invertedN_Matrix}
-            startEqualSign
-            endMultiplySign
-          />
-          <Matrix
-            twoDimensionArray={JSON.parse(
-              JSON.stringify(dataForFirstIteration?.AD_Matrix)
-            )}
-            startMultiplySign
-            endMultiplySign
-          />
-          <Matrix
-            oneDimensionArr={dataForFirstIteration.dU_Matrix}
-            startMultiplySign
-            endEqualSign
-          />
-          <Matrix
-            oneDimensionArr={JSON.parse(
-              JSON.stringify(dataForFirstIteration.dX_Matrix)
-            )}
-            startEqualSign
-          />
-          <h6>
-            Поправка компаса = {dataForFirstIteration.compassError_RoundTo6} °
-          </h6>
-          <h5>9. Рассчитаем параметры обсервации</h5>
-          <div className="finalFirstIterationValues">
-            <div>
-              1) φ<sub>0</sub> = φ<sub>c</sub> + ∆φ ={" "}
-              <b>
-                {" "}
-                {dataForFirstIteration.finalObservedCoordinates.lat.dgr +
-                  "°  " +
-                  dataForFirstIteration.finalObservedCoordinates.lat.mins +
-                  "'  " +
-                  dataForFirstIteration.finalObservedCoordinates.lat
-                    .seconds_RoundTo2 +
-                  '"  ' +
-                  (dataForFirstIteration.finalObservedCoordinates.lat
-                    .isDirectionNorthOrEast
-                    ? "N"
-                    : "S")}
-              </b>
-            </div>
-            <div>
-              2) λ<sub>0</sub> = λ<sub>c</sub> + ∆λ ={" "}
-              <b>
-                {dataForFirstIteration.finalObservedCoordinates.lon.dgr +
-                  "°  " +
-                  dataForFirstIteration.finalObservedCoordinates.lon.mins +
-                  "'  " +
-                  dataForFirstIteration.finalObservedCoordinates.lon
-                    .seconds_RoundTo2 +
-                  '"  ' +
-                  (dataForFirstIteration.finalObservedCoordinates.lon
-                    .isDirectionNorthOrEast
-                    ? "E"
-                    : "W")}
-              </b>
-            </div>
-          </div>
-          <h5>
-            10. Априорная точность обсервации (матрица N1 рассчитана в пункте 8)
-          </h5>
-          <h6>
-            Найдём собственные числа матрицы N1, а затем малую (b) и большую (a)
-            полуоси эллипса погрешностей
-          </h6>
-
-          <ImageWithValue
-            imageUrl={lambda_formula}
-            imageClassName={"lambda_formula"}
-            formula_twoDimensionArray={N1_Matrix_Formula}
-            startSign={"N1 = "}
-          />
-          <div className="container">
-            <table className="value withoutMatrixBorder">
-              <tbody>
-                <tr>
-                  <td>
-                    λ1 ={" "}
-                    {dataForFirstIteration.prioriErrors?.firstLambda_RoundTo6}
-                  </td>
-                  <td>
-                    a = √λ1 = {dataForFirstIteration.prioriErrors.a_RoundTo6} x
-                    1852 метра
-                  </td>
-                  <td>
-                    {" "}
-                    = {
-                      dataForFirstIteration.prioriErrors.a_meters_RoundTo1
-                    }{" "}
-                    метров
-                  </td>
-                </tr>
-                <tr>
-                  <td>
-                    λ2 ={" "}
-                    {dataForFirstIteration.prioriErrors?.secondLambda_RoundTo6}
-                  </td>
-                  <td>
-                    b = √λ2 = {dataForFirstIteration.prioriErrors.b_RoundTo6} x
-                    1852 метра
-                  </td>
-                  <td>
-                    = {dataForFirstIteration.prioriErrors.b_meters_RoundTo1}{" "}
-                    метров
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <h6>
-            Вычислим угол наклона большой полуоси относительно N-истинного, а
-            также радиальную погрешность M
-          </h6>
-
-          <ImageWithValue
-            imageUrl={psiAngle}
-            imageClassName={"psiAngle_formula"}
-            withoutMatrixBorder
-            formula_oneDimensionArray={
-              dataForFirstIteration.psiAngleAndRadialErrorArr_Formula
-            }
+          <IterationData
+            dataForIteration={dataForFirstIteration}
+            isFirstIteration={true}
           />
         </Box>
       )}

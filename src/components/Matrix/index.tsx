@@ -51,36 +51,38 @@ export default function Matrix({
           withoutMatrixBorder: withoutMatrixBorder,
         })}
       >
-        <>
-          {!twoDimensionArray &&
-            oneDimensionArr?.map((item) => (
-              <tr>
-                <td>{item}</td>
-              </tr>
-            ))}
-          {twoDimensionArray &&
-            twoDimensionArray?.map((item: number[]) => (
-              <tr>
-                {item.map((item: number) => (
+        <tbody>
+          <>
+            {!twoDimensionArray &&
+              oneDimensionArr?.map((item, i) => (
+                <tr key={i}>
                   <td>{item}</td>
-                ))}
-              </tr>
-            ))}
-          {formula_oneDimensionArray &&
-            formula_oneDimensionArray.map((item) => (
-              <tr>
-                <td>{item}</td>
-              </tr>
-            ))}
-          {formula_twoDimensionArray &&
-            formula_twoDimensionArray.map((item) => (
-              <tr>
-                {item.map((item: string) => (
+                </tr>
+              ))}
+            {twoDimensionArray &&
+              twoDimensionArray?.map((item: number[], i) => (
+                <tr key={i}>
+                  {item.map((item: number, i) => (
+                    <td key={i}>{item}</td>
+                  ))}
+                </tr>
+              ))}
+            {formula_oneDimensionArray &&
+              formula_oneDimensionArray.map((item, i) => (
+                <tr key={i}>
                   <td>{item}</td>
-                ))}
-              </tr>
-            ))}
-        </>
+                </tr>
+              ))}
+            {formula_twoDimensionArray &&
+              formula_twoDimensionArray.map((item, i) => (
+                <tr key={i}>
+                  {item.map((item: string, i) => (
+                    <td key={i}>{item}</td>
+                  ))}
+                </tr>
+              ))}
+          </>
+        </tbody>
       </table>
       <div className="endSign">
         {(endSign ? ` ${endSign} ` : false) ||

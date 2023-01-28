@@ -306,6 +306,19 @@ export const findPsiAngle = (firstLambda_RoundTo6: number, N1_Matrix: any) => {
   return angle > 0 ? radiansToDgr(angle) : 180 + radiansToDgr(angle);
 };
 
+export const calculateDiscrepancyAngleAndValue = (dX_Matrix: any) => {
+  let angle_RoundTo1 = Math.atan(dX_Matrix[1] / dX_Matrix[0]) * (180 / Math.PI);
+
+  if (angle_RoundTo1 < 0) {
+    angle_RoundTo1 = angle_RoundTo1 + 180;
+  }
+  let value_RoundTo6 = Math.sqrt(dX_Matrix[0] ** 2 + dX_Matrix[1] ** 2);
+  return {
+    angle_RoundTo1,
+    value_RoundTo6,
+  };
+};
+
 export const calculateIterationData = (
   data: inputData,
   whatIteration: whatIteration,
@@ -469,6 +482,7 @@ export const calculateIterationData = (
     `= ${psiAngle.toFixed(2)} °`,
     `= ${prioriErrors.radialError_RoundTo1.toFixed(2)} м`,
   ];
+  let discrepancyObj = calculateDiscrepancyAngleAndValue(dX_Matrix);
 
   let dataForIterationObject = {
     initialValues: {
@@ -565,6 +579,7 @@ export const calculateIterationData = (
     prioriErrors,
     psiAngle,
     psiAngleAndRadialErrorArr_Formula,
+    discrepancyObj,
   };
   return dataForIterationObject;
 };
