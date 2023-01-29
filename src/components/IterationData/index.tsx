@@ -1,4 +1,11 @@
-import { Typography } from "@mui/material";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Typography,
+} from "@mui/material";
 import { transpose } from "mathjs";
 import React from "react";
 import { DisplayingCalculatedData } from "../../App";
@@ -16,6 +23,7 @@ import psiAngle from "./../../images/psiAngle.png";
 import discrepancy_img from "./../../images/discrepancy.png";
 import V_Matrix_img from "./../../images/V_Matrix.png";
 import posteriori_N_Matrix from "./../../images/posteriori_N_Matrix.png";
+import explanation from "./../../images/explanation.png";
 
 type Props = {
   dataForIteration: DisplayingCalculatedData;
@@ -39,6 +47,57 @@ export default function IterationData({
       <Typography variant="h3" mt={2} mb={3}>
         {isFirstIteration ? "Первая итерация" : "Вторая итерация"}
       </Typography>
+
+      {!isFirstIteration && (
+        <div>
+          <h6>Исходными данными для второй итерации являются:</h6>
+          <ol>
+            <li>
+              исходные разности широт и отшествия от ориентиров до счислимой
+              точки
+            </li>
+            <li>
+              разность широт и отшествие от счислимой точки до обсервованной
+              (получили из матрицы неизвестных в первой итерации)
+            </li>
+          </ol>
+          <p>
+            {" "}
+            Таким образом, полученные в первой итерации обсервованные координаты
+            (разность широт и отшествие из матрицы Х) принимаются за счислимые
+            координаты во второй итерации. Далее вычисления выполняются
+            аналогично.
+          </p>
+          <img src={explanation} alt="" width={"400px"} />
+          <Table sx={{ minWidth: 650 }} aria-label="simple table">
+            <TableHead>
+              <TableRow>
+                <TableCell sx={{ fontSize: 25 }} align="center">
+                  Номер ориентира
+                </TableCell>
+                <TableCell sx={{ fontSize: 25 }} align="center">
+                  Разность широт
+                </TableCell>
+                <TableCell sx={{ fontSize: 25 }} align="center">
+                  Отшествие
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {dataForIteration.latDiff_Matrix.map((item, i) => (
+                <TableRow>
+                  <TableCell align="center">{i + 1} ориентир</TableCell>
+                  <TableCell align="center">{item} '</TableCell>
+                  <TableCell align="center">
+                    {dataForIteration.departureDiff_Matrix[i]} '
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+
       <h5>1. Найдём счислимые пеленга</h5>
       <ImageWithValue
         imageUrl={isFirstIteration ? DRbearings_1 : DRbearings_2}
@@ -178,7 +237,7 @@ export default function IterationData({
         />
       </div>
       <h5>
-        10. Априорная точность обсервации (матрица N1 рассчитана в пункте 8)
+        10. Априорная точность обсервации (матрица N1 рассчитана в пункте 7)
       </h5>
       <h6>
         Найдём собственные числа матрицы N1, а затем малую (b) и большую (a)
@@ -268,6 +327,66 @@ export default function IterationData({
         startSign={" = "}
         imageClassName={"psiAngle_formula"}
         twoDimensionArray={dataForIteration.posterioriN_Matrix}
+      />
+
+      <h6>
+        Найдём собственные числа апостериорной матрицы N1<sub>апостер</sub>, а
+        затем малую (b) и большую (a) полуоси эллипса погрешностей
+      </h6>
+
+      <ImageWithValue
+        imageUrl={lambda_formula}
+        imageClassName={"lambda_formula"}
+        formula_twoDimensionArray={N1_Matrix_Formula}
+        startSign={" N1<sub>апостер</sub> = "}
+      />
+      <div className="container">
+        <table className="value withoutMatrixBorder">
+          <tbody>
+            <tr>
+              <td>
+                λ1 ={" "}
+                {dataForIteration.posterioriErrorsObj?.firstLambda_RoundTo6}
+              </td>
+              <td>
+                a = √λ1 = {dataForIteration.posterioriErrorsObj.a_RoundTo6} x
+                1852 метра
+              </td>
+              <td>
+                {" "}
+                = {dataForIteration.posterioriErrorsObj.a_meters_RoundTo1}{" "}
+                метров
+              </td>
+            </tr>
+            <tr>
+              <td>
+                λ2 ={" "}
+                {dataForIteration.posterioriErrorsObj?.secondLambda_RoundTo6}
+              </td>
+              <td>
+                b = √λ2 = {dataForIteration.posterioriErrorsObj.b_RoundTo6} x
+                1852 метра
+              </td>
+              <td>
+                = {dataForIteration.posterioriErrorsObj.b_meters_RoundTo1}{" "}
+                метров
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <h6>
+        Вычислим угол наклона большой полуоси относительно N-истинного, а также
+        радиальную погрешность M
+      </h6>
+
+      <ImageWithValue
+        imageUrl={psiAngle}
+        imageClassName={"psiAngle_formula"}
+        withoutMatrixBorder
+        formula_oneDimensionArray={
+          dataForIteration.posterioriPsiAngleAndRadialErrorArr_Formula
+        }
       />
     </div>
   );

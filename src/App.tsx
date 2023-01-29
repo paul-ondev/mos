@@ -98,8 +98,8 @@ export interface DisplayingCalculatedData {
       bearing: number;
     };
   };
-  latDiff: number[];
-  departureDiff: number[];
+  latDiff_Matrix: number[];
+  departureDiff_Matrix: number[];
   DRBearingsSet_Matrix: number[];
   dU_Matrix: number[];
   A_Matrix: number[][];
@@ -135,7 +135,7 @@ export interface DisplayingCalculatedData {
     b_meters_RoundTo1: number;
     radialError_RoundTo1: number;
   };
-  psiAngle: number;
+
   psiAngleAndRadialErrorArr_Formula: string[];
   discrepancyObj: {
     angle_RoundTo1: number;
@@ -144,6 +144,17 @@ export interface DisplayingCalculatedData {
   V_Matrix: MathType;
   transposedVAndInvertedD_Matrix: math.Matrix;
   posterioriN_Matrix: math.Matrix;
+  posterioriErrorsObj: {
+    firstLambda_RoundTo6: number;
+    secondLambda_RoundTo6: number;
+    a_RoundTo6: number;
+    b_RoundTo6: number;
+    a_meters_RoundTo1: number;
+    b_meters_RoundTo1: number;
+    radialError_RoundTo1: number;
+  };
+
+  posterioriPsiAngleAndRadialErrorArr_Formula: string[];
 }
 
 type genericForIteration = DisplayingCalculatedData | undefined;
@@ -397,10 +408,10 @@ function App() {
                     {dataForFirstIteration?.initialValues.first.bearing + "°"}
                   </TableCell>
                   <TableCell align="right">
-                    {round(dataForFirstIteration?.latDiff[0], 2)}
+                    {round(dataForFirstIteration?.latDiff_Matrix[0], 2)}
                   </TableCell>
                   <TableCell align="right">
-                    {round(dataForFirstIteration?.departureDiff[0], 2)}
+                    {round(dataForFirstIteration?.departureDiff_Matrix[0], 2)}
                   </TableCell>
                 </TableRow>
 
@@ -424,10 +435,10 @@ function App() {
                     {dataForFirstIteration?.initialValues.second.bearing + "°"}
                   </TableCell>
                   <TableCell align="right">
-                    {round(dataForFirstIteration?.latDiff[1], 2)}
+                    {round(dataForFirstIteration?.latDiff_Matrix[1], 2)}
                   </TableCell>
                   <TableCell align="right">
-                    {round(dataForFirstIteration?.departureDiff[1], 2)}
+                    {round(dataForFirstIteration?.departureDiff_Matrix[1], 2)}
                   </TableCell>
                 </TableRow>
 
@@ -451,10 +462,10 @@ function App() {
                     {dataForFirstIteration?.initialValues.third.bearing + "°"}
                   </TableCell>
                   <TableCell align="right">
-                    {round(dataForFirstIteration?.latDiff[2], 2)}
+                    {round(dataForFirstIteration?.latDiff_Matrix[2], 2)}
                   </TableCell>
                   <TableCell align="right">
-                    {round(dataForFirstIteration?.departureDiff[2], 2)}
+                    {round(dataForFirstIteration?.departureDiff_Matrix[2], 2)}
                   </TableCell>
                 </TableRow>
 
@@ -478,10 +489,10 @@ function App() {
                     {dataForFirstIteration?.initialValues.fourth.bearing + "°"}
                   </TableCell>
                   <TableCell align="right">
-                    {round(dataForFirstIteration?.latDiff[3], 2)}
+                    {round(dataForFirstIteration?.latDiff_Matrix[3], 2)}
                   </TableCell>
                   <TableCell align="right">
-                    {round(dataForFirstIteration?.departureDiff[3], 2)}
+                    {round(dataForFirstIteration?.departureDiff_Matrix[3], 2)}
                   </TableCell>
                 </TableRow>
 

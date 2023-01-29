@@ -41,3 +41,6 @@ h5, h6 {
 sub {
   font-size: smaller; 
 }
+ol {
+  text-align: left;
+}

@@ -410,37 +410,39 @@ export const calculateIterationData = (
       dir: data.DRLatDir,
     }
   );
-
-  let DRBearingsSet_Matrix = [0, 0, 0, 0];
-
-  if (whatIteration === "First Iteration") {
-    DRBearingsSet_Matrix = [
-      DRBearing(departureDiffOrient_1, latDiffOrient_1),
-      DRBearing(departureDiffOrient_2, latDiffOrient_2),
-      DRBearing(departureDiffOrient_3, latDiffOrient_3),
-      DRBearing(departureDiffOrient_4, latDiffOrient_4),
-    ];
-  }
   if (whatIteration === "Second Iteration") {
-    DRBearingsSet_Matrix = [
-      DRBearing(
-        departureDiffOrient_1 - dX_MatrixAfterFirstIteration[1],
-        latDiffOrient_1 - dX_MatrixAfterFirstIteration[0]
-      ) + dX_MatrixAfterFirstIteration[2],
-      DRBearing(
-        departureDiffOrient_2 - dX_MatrixAfterFirstIteration[1],
-        latDiffOrient_2 - dX_MatrixAfterFirstIteration[0]
-      ) + dX_MatrixAfterFirstIteration[2],
-      DRBearing(
-        departureDiffOrient_3 - dX_MatrixAfterFirstIteration[1],
-        latDiffOrient_3 - dX_MatrixAfterFirstIteration[0]
-      ) + dX_MatrixAfterFirstIteration[2],
-      DRBearing(
-        departureDiffOrient_4 - dX_MatrixAfterFirstIteration[1],
-        latDiffOrient_4 - dX_MatrixAfterFirstIteration[0]
-      ) + dX_MatrixAfterFirstIteration[2],
-    ];
+    departureDiffOrient_1 =
+      departureDiffOrient_1 - dX_MatrixAfterFirstIteration[1];
+    departureDiffOrient_2 =
+      departureDiffOrient_2 - dX_MatrixAfterFirstIteration[1];
+    departureDiffOrient_3 =
+      departureDiffOrient_3 - dX_MatrixAfterFirstIteration[1];
+    departureDiffOrient_4 =
+      departureDiffOrient_4 - dX_MatrixAfterFirstIteration[1];
+    latDiffOrient_1 = latDiffOrient_1 - dX_MatrixAfterFirstIteration[0];
+    latDiffOrient_2 = latDiffOrient_2 - dX_MatrixAfterFirstIteration[0];
+    latDiffOrient_3 = latDiffOrient_3 - dX_MatrixAfterFirstIteration[0];
+    latDiffOrient_4 = latDiffOrient_4 - dX_MatrixAfterFirstIteration[0];
   }
+
+  let DRBearingsSet_Matrix = [
+    whatIteration === "First Iteration"
+      ? DRBearing(departureDiffOrient_1, latDiffOrient_1)
+      : DRBearing(departureDiffOrient_1, latDiffOrient_1) +
+        dX_MatrixAfterFirstIteration[2],
+    whatIteration === "First Iteration"
+      ? DRBearing(departureDiffOrient_2, latDiffOrient_2)
+      : DRBearing(departureDiffOrient_2, latDiffOrient_2) +
+        dX_MatrixAfterFirstIteration[2],
+    whatIteration === "First Iteration"
+      ? DRBearing(departureDiffOrient_3, latDiffOrient_3)
+      : DRBearing(departureDiffOrient_3, latDiffOrient_3) +
+        dX_MatrixAfterFirstIteration[2],
+    whatIteration === "First Iteration"
+      ? DRBearing(departureDiffOrient_4, latDiffOrient_4)
+      : DRBearing(departureDiffOrient_4, latDiffOrient_4) +
+        dX_MatrixAfterFirstIteration[2],
+  ];
 
   let dU_Matrix = createDeltaUMatrix(
     [dgrToRadians(+data.orientNumber1Bearing), DRBearingsSet_Matrix[0]],
@@ -449,35 +451,13 @@ export const calculateIterationData = (
     [dgrToRadians(+data.orientNumber4Bearing), DRBearingsSet_Matrix[3]]
   );
   let invertedD_Matrix = createInvertedD_Matrix();
-  let A_Matrix = [[0]];
-  if (whatIteration === "First Iteration") {
-    A_Matrix = createAMatrix(
-      [departureDiffOrient_1, latDiffOrient_1],
-      [departureDiffOrient_2, latDiffOrient_2],
-      [departureDiffOrient_3, latDiffOrient_3],
-      [departureDiffOrient_4, latDiffOrient_4]
-    );
-  }
-  if (whatIteration === "Second Iteration") {
-    A_Matrix = createAMatrix(
-      [
-        departureDiffOrient_1 - dX_MatrixAfterFirstIteration[1],
-        latDiffOrient_1 - dX_MatrixAfterFirstIteration[0],
-      ],
-      [
-        departureDiffOrient_2 - dX_MatrixAfterFirstIteration[1],
-        latDiffOrient_2 - dX_MatrixAfterFirstIteration[0],
-      ],
-      [
-        departureDiffOrient_3 - dX_MatrixAfterFirstIteration[1],
-        latDiffOrient_3 - dX_MatrixAfterFirstIteration[0],
-      ],
-      [
-        departureDiffOrient_4 - dX_MatrixAfterFirstIteration[1],
-        latDiffOrient_4 - dX_MatrixAfterFirstIteration[0],
-      ]
-    );
-  }
+
+  let A_Matrix = createAMatrix(
+    [departureDiffOrient_1, latDiffOrient_1],
+    [departureDiffOrient_2, latDiffOrient_2],
+    [departureDiffOrient_3, latDiffOrient_3],
+    [departureDiffOrient_4, latDiffOrient_4]
+  );
 
   let AD_Matrix = multiplyTransposedA_MatrixAndInvertedD_Matrix(
     A_Matrix,
@@ -515,6 +495,16 @@ export const calculateIterationData = (
     transposedVAndInvertedD_Matrix,
     invertedN_Matrix
   );
+  let posterioriN1_Matrix = createN1_Matrix(posterioriN_Matrix);
+  let posterioriErrorsObj = calculatePrioriErrors(posterioriN1_Matrix);
+  let posterioriPsiAngle = findPsiAngle(
+    posterioriErrorsObj.firstLambda_RoundTo6,
+    posterioriN1_Matrix
+  );
+  let posterioriPsiAngleAndRadialErrorArr_Formula = [
+    `= ${posterioriPsiAngle.toFixed(2)} °`,
+    `= ${posterioriErrorsObj.radialError_RoundTo1.toFixed(2)} м`,
+  ];
 
   let dataForIterationObject = {
     initialValues: {
@@ -583,13 +573,13 @@ export const calculateIterationData = (
         bearing: data.orientNumber4Bearing,
       },
     },
-    latDiff: [
+    latDiff_Matrix: [
       latDiffOrient_1,
       latDiffOrient_2,
       latDiffOrient_3,
       latDiffOrient_4,
     ],
-    departureDiff: [
+    departureDiff_Matrix: [
       departureDiffOrient_1,
       departureDiffOrient_2,
       departureDiffOrient_3,
@@ -609,12 +599,15 @@ export const calculateIterationData = (
     compassError_RoundTo6,
     finalObservedCoordinates,
     prioriErrors,
-    psiAngle,
+
     psiAngleAndRadialErrorArr_Formula,
     discrepancyObj,
     V_Matrix,
     transposedVAndInvertedD_Matrix,
     posterioriN_Matrix,
+    posterioriErrorsObj,
+
+    posterioriPsiAngleAndRadialErrorArr_Formula,
   };
   return dataForIterationObject;
 };
