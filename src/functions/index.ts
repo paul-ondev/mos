@@ -10,6 +10,7 @@ import {
   round,
   sec,
   subset,
+  subtract,
   transpose,
 } from "mathjs";
 import { DisplayingCalculatedData, inputData } from "../App";
@@ -291,6 +292,31 @@ export const calculateDiscrepancyAngleAndValue = (dX_Matrix: any) => {
   };
 };
 
+export const calculateV_Matrix = (
+  A_Matrix: number[][],
+  dX_Matrix: math.Matrix,
+  dU_Matrix: number[]
+) => {
+  return subtract(multiply(A_Matrix, dX_Matrix), dU_Matrix);
+};
+
+export const multiplyTransposedVAndInvertedD_Matrix = (
+  V_Matrix: MathType,
+  invertedD_Matrix: math.Matrix
+) => {
+  return multiply(V_Matrix, invertedD_Matrix);
+};
+
+export const calculatePosterioriN_Matrix = (
+  V_Matrix: MathType,
+  transposedVAndInvertedD_Matrix: math.Matrix,
+  N_Matrix: math.Matrix
+) => {
+  let VtD1V = multiply(transposedVAndInvertedD_Matrix, V_Matrix);
+  console.log(VtD1V);
+  return multiply(VtD1V, N_Matrix);
+};
+
 export const calculateIterationData = (
   data: inputData,
   whatIteration: whatIteration,
@@ -479,6 +505,16 @@ export const calculateIterationData = (
     `= ${prioriErrors.radialError_RoundTo1.toFixed(2)} м`,
   ];
   let discrepancyObj = calculateDiscrepancyAngleAndValue(dX_Matrix);
+  let V_Matrix = calculateV_Matrix(A_Matrix, dX_Matrix, dU_Matrix);
+  let transposedVAndInvertedD_Matrix = multiplyTransposedVAndInvertedD_Matrix(
+    V_Matrix,
+    invertedD_Matrix
+  );
+  let posterioriN_Matrix = calculatePosterioriN_Matrix(
+    V_Matrix,
+    transposedVAndInvertedD_Matrix,
+    invertedN_Matrix
+  );
 
   let dataForIterationObject = {
     initialValues: {
@@ -576,6 +612,9 @@ export const calculateIterationData = (
     psiAngle,
     psiAngleAndRadialErrorArr_Formula,
     discrepancyObj,
+    V_Matrix,
+    transposedVAndInvertedD_Matrix,
+    posterioriN_Matrix,
   };
   return dataForIterationObject;
 };

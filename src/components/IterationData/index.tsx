@@ -5,7 +5,8 @@ import { DisplayingCalculatedData } from "../../App";
 import ImageWithValue from "../ImageWithValue";
 import Matrix from "../Matrix";
 
-import DRbearings_img from "./../../images/DRbearings1.png";
+import DRbearings_1 from "./../../images/DRbearings1.png";
+import DRbearings_2 from "./../../images/DRbearings2.png";
 import deltaU_img from "./../../images/deltaU.png";
 import partialDifferential from "./../../images/partialDifferential.png";
 import A_Matrix from "./../../images/A_Matrix.png";
@@ -13,6 +14,8 @@ import D1_Matrix from "./../../images/D-1_Matrix.png";
 import lambda_formula from "./../../images/lambda_formula.png";
 import psiAngle from "./../../images/psiAngle.png";
 import discrepancy_img from "./../../images/discrepancy.png";
+import V_Matrix_img from "./../../images/V_Matrix.png";
+import posteriori_N_Matrix from "./../../images/posteriori_N_Matrix.png";
 
 type Props = {
   dataForIteration: DisplayingCalculatedData;
@@ -38,7 +41,7 @@ export default function IterationData({
       </Typography>
       <h5>1. Найдём счислимые пеленга</h5>
       <ImageWithValue
-        imageUrl={DRbearings_img}
+        imageUrl={isFirstIteration ? DRbearings_1 : DRbearings_2}
         oneDimensionArr={dataForIteration.DRBearingsSet_Matrix}
         withoutMatrixBorder
       />
@@ -49,7 +52,7 @@ export default function IterationData({
       />
       <h5>3. Рассчитываем матрицу A.</h5>
       <h6>Находим частные производные по ∂x и ∂y и ∂z</h6>
-      <img src={partialDifferential} alt="" />
+      <img src={partialDifferential} alt="" width={"400px"} />
       <h6>Формируем матрицу A</h6>
       <ImageWithValue
         imageUrl={A_Matrix}
@@ -231,6 +234,40 @@ export default function IterationData({
         formula_oneDimensionArray={
           dataForIteration.psiAngleAndRadialErrorArr_Formula
         }
+      />
+
+      <h5>11. Апостериорная точность обсервации</h5>
+      <h6> Рассчитываем вектор невязок</h6>
+      <ImageWithValue
+        imageUrl={V_Matrix_img}
+        imageClassName={"psiAngle_formula"}
+        oneDimensionArr={dataForIteration.V_Matrix}
+      />
+      <h6>
+        {" "}
+        Рассчитываем матрицу V <sup>T</sup> × D<sup>-1</sup> =
+      </h6>
+      {/* Transposed V matrix */}
+
+      <Matrix
+        oneDimensionRowArr={dataForIteration.V_Matrix}
+        endMultiplySign
+        startEqualSign
+      />
+      <Matrix
+        twoDimensionArray={dataForIteration.invertedD_Matrix}
+        startMultiplySign
+        endEqualSign
+      />
+      <Matrix
+        oneDimensionRowArr={dataForIteration.transposedVAndInvertedD_Matrix}
+        startEqualSign
+      />
+      <ImageWithValue
+        imageUrl={posteriori_N_Matrix}
+        startSign={" = "}
+        imageClassName={"psiAngle_formula"}
+        twoDimensionArray={dataForIteration.posterioriN_Matrix}
       />
     </div>
   );

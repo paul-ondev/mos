@@ -11,7 +11,8 @@ type Props = {
   endSign?: string;
   endMultiplySign?: boolean;
   endEqualSign?: boolean;
-  oneDimensionArr?: number[];
+  oneDimensionArr?: any;
+  oneDimensionRowArr?: any;
   withoutMatrixBorder?: boolean;
   twoDimensionArray?: number[][] | math.Matrix;
   formula_oneDimensionArray?: string[];
@@ -26,6 +27,7 @@ export default function Matrix({
   endMultiplySign,
   endEqualSign,
   oneDimensionArr,
+  oneDimensionRowArr,
   withoutMatrixBorder,
   twoDimensionArray,
   formula_oneDimensionArray,
@@ -54,7 +56,7 @@ export default function Matrix({
         <tbody>
           <>
             {!twoDimensionArray &&
-              oneDimensionArr?.map((item, i) => (
+              oneDimensionArr?.map((item: any, i: number) => (
                 <tr key={i}>
                   <td>{item}</td>
                 </tr>
@@ -81,6 +83,13 @@ export default function Matrix({
                   ))}
                 </tr>
               ))}
+            {oneDimensionRowArr && (
+              <tr>
+                {oneDimensionRowArr.map((item: number, i: number) => (
+                  <td key={i}>{item}</td>
+                ))}
+              </tr>
+            )}
           </>
         </tbody>
       </table>

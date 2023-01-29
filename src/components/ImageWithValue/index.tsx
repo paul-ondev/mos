@@ -8,9 +8,9 @@ import classNames from "classnames";
 type Props = {
   imageUrl: string;
   imageClassName?: string;
-  oneDimensionArr?: number[];
+  oneDimensionArr?: any;
   withoutMatrixBorder?: boolean;
-  twoDimensionArray?: number[][];
+  twoDimensionArray?: any;
   startSign?: string;
   endSign?: string;
   formula_oneDimensionArray?: string[];

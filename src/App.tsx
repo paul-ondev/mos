@@ -21,7 +21,7 @@ import {
   roundIterationObjectValues,
 } from "./functions";
 import { useState } from "react";
-import { MathType, round, transpose } from "mathjs";
+import { MathType, round } from "mathjs";
 
 import {
   Table,
@@ -31,8 +31,7 @@ import {
   TableHead,
   TableRow,
 } from "@mui/material";
-import ImageWithValue from "./components/ImageWithValue";
-import Matrix from "./components/Matrix";
+
 import IterationData from "./components/IterationData";
 
 export interface inputData {
@@ -142,6 +141,9 @@ export interface DisplayingCalculatedData {
     angle_RoundTo1: number;
     value_RoundTo6: number;
   };
+  V_Matrix: MathType;
+  transposedVAndInvertedD_Matrix: math.Matrix;
+  posterioriN_Matrix: math.Matrix;
 }
 
 type genericForIteration = DisplayingCalculatedData | undefined;
