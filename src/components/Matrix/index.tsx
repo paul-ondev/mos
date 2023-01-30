@@ -17,6 +17,7 @@ type Props = {
   twoDimensionArray?: number[][] | math.Matrix;
   formula_oneDimensionArray?: string[];
   formula_twoDimensionArray?: string[][];
+  emphasizeN1Matrix?: boolean;
 };
 
 export default function Matrix({
@@ -32,6 +33,7 @@ export default function Matrix({
   twoDimensionArray,
   formula_oneDimensionArray,
   formula_twoDimensionArray,
+  emphasizeN1Matrix,
 }: Props) {
   return (
     <div className="container">
@@ -51,6 +53,7 @@ export default function Matrix({
       <table
         className={classNames("value", {
           withoutMatrixBorder: withoutMatrixBorder,
+          emphasizeN1Matrix: emphasizeN1Matrix,
         })}
       >
         <tbody>

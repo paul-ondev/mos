@@ -27,3 +27,8 @@ border: 0;
     align-content: center;
     flex-wrap: wrap;
 }
+.emphasizeN1Matrix > tbody > tr:nth-child(1) > td:nth-child(-n+2),
+.emphasizeN1Matrix > tbody > tr:nth-child(2) > td:nth-child(-n+2) {
+  border: 4px solid rgb(191, 12, 207);
+}
+

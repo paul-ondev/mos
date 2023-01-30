@@ -24,6 +24,7 @@ import discrepancy_img from "./../../images/discrepancy.png";
 import V_Matrix_img from "./../../images/V_Matrix.png";
 import posteriori_N_Matrix from "./../../images/posteriori_N_Matrix.png";
 import explanation from "./../../images/explanation.png";
+import dX_explanation from "./../../images/dX_explanation.png";
 
 type Props = {
   dataForIteration: DisplayingCalculatedData;
@@ -64,9 +65,9 @@ export default function IterationData({
           <p>
             {" "}
             Таким образом, полученные в первой итерации обсервованные координаты
-            (разность широт и отшествие из матрицы Х) принимаются за счислимые
-            координаты во второй итерации. Далее вычисления выполняются
-            аналогично.
+            (разность широт и отшествие из матрицы неизвестных ∆Х) принимаются
+            за счислимые координаты во второй итерации. Далее вычисления
+            выполняются аналогично.
           </p>
           <img src={explanation} alt="" width={"400px"} />
           <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -76,10 +77,10 @@ export default function IterationData({
                   Номер ориентира
                 </TableCell>
                 <TableCell sx={{ fontSize: 25 }} align="center">
-                  Разность широт
+                  Разность широт <b>∆φ</b>
                 </TableCell>
                 <TableCell sx={{ fontSize: 25 }} align="center">
-                  Отшествие
+                  Отшествие <b>∆w</b>
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -124,15 +125,16 @@ export default function IterationData({
       <h5>
         5. Вычисляем промежуточную матрицу A<sup>T</sup>× D<sup>-1</sup>
       </h5>
-      <Matrix
-        twoDimensionArray={transpose(dataForIteration.A_Matrix)}
-        endMultiplySign
-      />
-      <Matrix
-        twoDimensionArray={dataForIteration.invertedD_Matrix}
-        startMultiplySign
-        endEqualSign
-      />
+      <div className="container">
+        <Matrix
+          twoDimensionArray={transpose(dataForIteration.A_Matrix)}
+          endMultiplySign
+        />
+        <Matrix
+          twoDimensionArray={dataForIteration.invertedD_Matrix}
+          endEqualSign
+        />
+      </div>
       <Matrix
         twoDimensionArray={JSON.parse(
           JSON.stringify(dataForIteration?.AD_Matrix)
@@ -143,61 +145,80 @@ export default function IterationData({
         6. Вычисляем матрицу коэффициентов нормального уравнения N = A
         <sup>T</sup>× D<sup>-1</sup> × A
       </h5>
+
       <Matrix
         twoDimensionArray={JSON.parse(
           JSON.stringify(dataForIteration?.AD_Matrix)
         )}
         endMultiplySign
       />
-      <Matrix
-        twoDimensionArray={dataForIteration.A_Matrix}
-        startMultiplySign
-        endEqualSign
-      />
-      <Matrix twoDimensionArray={dataForIteration.N_Matrix} startEqualSign />
+      <div className="container">
+        <Matrix
+          twoDimensionArray={dataForIteration.A_Matrix}
+          startMultiplySign
+        />
+        <Matrix twoDimensionArray={dataForIteration.N_Matrix} startEqualSign />
+      </div>
+
       <h5>
         7. Вычисляем ковариационную матрицу погрешностей обсервованных координат
         N<sup>-1</sup> = (A
         <sup>T</sup>× D<sup>-1</sup> × A)<sup>-1</sup> =
       </h5>
-      <Matrix
-        twoDimensionArray={dataForIteration.invertedN_Matrix}
-        startEqualSign
-      />
-      <Matrix
-        twoDimensionArray={dataForIteration.N1_Matrix}
-        startSign=" N1 = "
-      />
+      <div className="container">
+        <Matrix
+          twoDimensionArray={dataForIteration.invertedN_Matrix}
+          startEqualSign
+          emphasizeN1Matrix
+        />
+        <Matrix
+          twoDimensionArray={dataForIteration.N1_Matrix}
+          startSign=" N1 = "
+          emphasizeN1Matrix
+        />
+      </div>
+
       <h5>
-        8. Вычисляем матрицу (вектор) неизвестных: ∆ x = N<sup>-1</sup> × A
-        <sup>T</sup> × D<sup>-1</sup> × ∆U =
+        8. Вычисляем матрицу (вектор) неизвестных: ∆{" "}
+        <span className="overXSign">x</span> = N<sup>-1</sup> × A<sup>T</sup> ×
+        D<sup>-1</sup> × ∆U =
       </h5>
-      <Matrix
-        twoDimensionArray={dataForIteration.invertedN_Matrix}
-        startEqualSign
-        endMultiplySign
-      />
-      <Matrix
-        twoDimensionArray={JSON.parse(
-          JSON.stringify(dataForIteration?.AD_Matrix)
-        )}
-        startMultiplySign
-        endMultiplySign
-      />
-      <Matrix
-        oneDimensionArr={dataForIteration.dU_Matrix}
-        startMultiplySign
-        endEqualSign
-      />
-      <Matrix
-        oneDimensionArr={JSON.parse(JSON.stringify(dataForIteration.dX_Matrix))}
-        startEqualSign
-      />
+      <div className="container">
+        <Matrix
+          twoDimensionArray={dataForIteration.invertedN_Matrix}
+          startEqualSign
+        />
+        <Matrix
+          twoDimensionArray={JSON.parse(
+            JSON.stringify(dataForIteration?.AD_Matrix)
+          )}
+          startMultiplySign
+          endMultiplySign
+        />
+      </div>
+      <div className="container">
+        <Matrix
+          oneDimensionArr={dataForIteration.dU_Matrix}
+          startMultiplySign
+          endEqualSign
+        />
+
+        <ImageWithValue
+          imageUrl={dX_explanation}
+          oneDimensionArr={JSON.parse(
+            JSON.stringify(dataForIteration.dX_Matrix)
+          )}
+          imageClassName={"dX_explanation"}
+          startSign={" = "}
+        />
+      </div>
       <h6>Поправка компаса = {dataForIteration.compassError_RoundTo6} °</h6>
       <h5>9. Рассчитаем параметры обсервации</h5>
       <div className="finalFirstIterationValues">
         <div>
-          1) φ<sub>0</sub> = φ<sub>c</sub> + ∆φ ={" "}
+          1) <b>φ</b>
+          <sub>0</sub> = <b>φ</b>
+          <sub>c</sub> + <b>∆φ</b> ={" "}
           <b>
             {" "}
             {dataForIteration.finalObservedCoordinates.lat.dgr +
@@ -213,7 +234,9 @@ export default function IterationData({
           </b>
         </div>
         <div>
-          2) λ<sub>0</sub> = λ<sub>c</sub> + ∆λ ={" "}
+          2) <b>λ</b>
+          <sub>0</sub> = <b>λ</b>
+          <sub>c</sub> + <b>∆λ</b> ={" "}
           <b>
             {dataForIteration.finalObservedCoordinates.lon.dgr +
               "°  " +
@@ -315,9 +338,10 @@ export default function IterationData({
       />
       <Matrix
         twoDimensionArray={dataForIteration.invertedD_Matrix}
-        startMultiplySign
         endEqualSign
+        startMultiplySign
       />
+
       <Matrix
         oneDimensionRowArr={dataForIteration.transposedVAndInvertedD_Matrix}
         startEqualSign
@@ -327,6 +351,7 @@ export default function IterationData({
         startSign={" = "}
         imageClassName={"psiAngle_formula"}
         twoDimensionArray={dataForIteration.posterioriN_Matrix}
+        emphasizeN1Matrix
       />
 
       <h6>

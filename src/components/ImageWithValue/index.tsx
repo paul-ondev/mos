@@ -15,6 +15,7 @@ type Props = {
   endSign?: string;
   formula_oneDimensionArray?: string[];
   formula_twoDimensionArray?: string[][];
+  emphasizeN1Matrix?: boolean;
 };
 
 export default function ImageWithValue({
@@ -27,6 +28,7 @@ export default function ImageWithValue({
   endSign,
   formula_oneDimensionArray,
   formula_twoDimensionArray,
+  emphasizeN1Matrix,
 }: Props) {
   return (
     <div className="container">
@@ -41,6 +43,7 @@ export default function ImageWithValue({
         endSign={endSign}
         formula_oneDimensionArray={formula_oneDimensionArray}
         formula_twoDimensionArray={formula_twoDimensionArray}
+        emphasizeN1Matrix={emphasizeN1Matrix}
       />
     </div>
   );

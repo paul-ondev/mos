@@ -29,7 +29,9 @@ const NavItem = ({ number, register }: NavItemParam) => {
           <Item>{actualNumber} ориентир</Item>
         </Grid>
         <Grid item xs={3}>
-          <Item sx={{ height: "80%" }}>Широта</Item>
+          <Item sx={{ height: "80%" }}>
+            Широта <b>φ</b>{" "}
+          </Item>
         </Grid>
         <Grid item xs={3}>
           <Item>
@@ -69,7 +71,9 @@ const NavItem = ({ number, register }: NavItemParam) => {
         </Grid>
 
         <Grid item xs={3}>
-          <Item sx={{ height: "80%" }}>Долгота</Item>
+          <Item sx={{ height: "80%" }}>
+            Долгота <b>λ</b>
+          </Item>
         </Grid>
         <Grid item xs={3}>
           <Item>

@@ -4,6 +4,7 @@
 
 .App {
   text-align: center;
+  padding: 30px;
 }
 
 .App-header {
@@ -43,4 +44,7 @@ sub {
 }
 ol {
   text-align: left;
+}
+.overXSign {
+  border-top: 3px solid Black;
 }

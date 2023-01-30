@@ -198,12 +198,8 @@ export const calculateObservedCoordinates = (
       ? DRLongInMins
       : -DRLongInMins;
 
-  const lat = convertMinutesToDMSFromMinutes(
-    DRLatInMins + radiansToDgr(dX_Matrix[0]) / 60
-  );
-  const lon = convertMinutesToDMSFromMinutes(
-    DRLongInMins + (radiansToDgr(dX_Matrix[1]) / 60) * sec(dgrToRadians(60))
-  );
+  const lat = convertMinutesToDMSFromMinutes(DRLatInMins + dX_Matrix[0]);
+  const lon = convertMinutesToDMSFromMinutes(DRLongInMins + 2 * dX_Matrix[1]);
 
   return { lat, lon };
 };

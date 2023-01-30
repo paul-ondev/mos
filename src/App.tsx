@@ -283,7 +283,7 @@ function App() {
         <Typography variant="h3" gutterBottom>
           Курсовая работа по МОС
         </Typography>
-        <Typography>Исходные данные</Typography>
+        <Typography>Введите исходные данные</Typography>
       </Box>
 
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -297,7 +297,9 @@ function App() {
               <Item>Счислимые координаты</Item>
             </Grid>
             <Grid item xs={3}>
-              <Item sx={{ height: "80%" }}>Широта</Item>
+              <Item sx={{ height: "80%" }}>
+                Широта <b>φ</b>{" "}
+              </Item>
             </Grid>
             <Grid item xs={3}>
               <Item>
@@ -331,7 +333,9 @@ function App() {
             </Grid>
 
             <Grid item xs={3}>
-              <Item sx={{ height: "80%" }}>Долгота</Item>
+              <Item sx={{ height: "80%" }}>
+                Долгота <b>λ</b>
+              </Item>
             </Grid>
             <Grid item xs={3}>
               <Item>
@@ -380,11 +384,19 @@ function App() {
               <TableHead>
                 <TableRow>
                   <TableCell>Номер ориентира</TableCell>
-                  <TableCell align="right">Широта</TableCell>
-                  <TableCell align="right">Долгота</TableCell>
+                  <TableCell align="right">
+                    Широта <b>φ</b>{" "}
+                  </TableCell>
+                  <TableCell align="right">
+                    Долгота <b>λ</b>
+                  </TableCell>
                   <TableCell align="right">Пеленг обсервованный </TableCell>
-                  <TableCell align="right">Разность широт</TableCell>
-                  <TableCell align="right">Отшествие</TableCell>
+                  <TableCell align="right">
+                    Разность широт <b>∆φ</b>
+                  </TableCell>
+                  <TableCell align="right">
+                    Отшествие <b>∆w</b>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
