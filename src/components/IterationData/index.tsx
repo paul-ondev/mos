@@ -225,7 +225,7 @@ export default function IterationData({
               "°  " +
               dataForIteration.finalObservedCoordinates.lat.mins +
               "'  " +
-              dataForIteration.finalObservedCoordinates.lat.seconds_RoundTo2 +
+              dataForIteration.finalObservedCoordinates.lat.seconds_RoundTo4 +
               '"  ' +
               (dataForIteration.finalObservedCoordinates.lat
                 .isDirectionNorthOrEast
@@ -242,7 +242,7 @@ export default function IterationData({
               "°  " +
               dataForIteration.finalObservedCoordinates.lon.mins +
               "'  " +
-              dataForIteration.finalObservedCoordinates.lon.seconds_RoundTo2 +
+              dataForIteration.finalObservedCoordinates.lon.seconds_RoundTo4 +
               '"  ' +
               (dataForIteration.finalObservedCoordinates.lon
                 .isDirectionNorthOrEast

@@ -116,13 +116,13 @@ export interface DisplayingCalculatedData {
     lat: {
       dgr: number;
       mins: number;
-      seconds_RoundTo2: number;
+      seconds_RoundTo4: number;
       isDirectionNorthOrEast: boolean;
     };
     lon: {
       dgr: number;
       mins: number;
-      seconds_RoundTo2: number;
+      seconds_RoundTo4: number;
       isDirectionNorthOrEast: boolean;
     };
   };

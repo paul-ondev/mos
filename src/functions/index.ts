@@ -73,18 +73,8 @@ export const departureDiff = (
 };
 
 export const DRBearing = (departureDiff: number, latDiff: number): number => {
-  let bearing_quarter = Math.atan(departureDiff / latDiff);
-
-  if (departureDiff > 0) {
-    return bearing_quarter > 0 ? bearing_quarter : bearing_quarter + Math.PI;
-  }
-  if (departureDiff < 0) {
-    return bearing_quarter > 0
-      ? bearing_quarter + Math.PI
-      : bearing_quarter + 2 * Math.PI;
-  }
-  console.log("ERROR departureDiff = 0");
-  return 0;
+  let bearing = atanNavigational(departureDiff, latDiff);
+  return bearing;
 };
 
 export const createDeltaUMatrix = (
@@ -183,7 +173,8 @@ export const calculateCompassError = (deltaX_Matrix: any) => {
 export const calculateObservedCoordinates = (
   dX_Matrix: any,
   DRLatObject: latObject,
-  DRLongObject: longObject
+  DRLongObject: longObject,
+  dX_MatrixAfterFirstIteration?: any
 ) => {
   let DRLatInMins = toMins(DRLatObject.dgr, DRLatObject.mins);
 
@@ -198,8 +189,16 @@ export const calculateObservedCoordinates = (
       ? DRLongInMins
       : -DRLongInMins;
 
-  const lat = convertMinutesToDMSFromMinutes(DRLatInMins + dX_Matrix[0]);
-  const lon = convertMinutesToDMSFromMinutes(DRLongInMins + 2 * dX_Matrix[1]);
+  const lat = dX_MatrixAfterFirstIteration
+    ? convertMinutesToDMSFromMinutes(
+        DRLatInMins + dX_Matrix[0] + dX_MatrixAfterFirstIteration[0]
+      )
+    : convertMinutesToDMSFromMinutes(DRLatInMins + dX_Matrix[0]);
+  const lon = dX_MatrixAfterFirstIteration
+    ? convertMinutesToDMSFromMinutes(
+        DRLongInMins + 2 * dX_Matrix[1] + 2 * dX_MatrixAfterFirstIteration[1]
+      )
+    : convertMinutesToDMSFromMinutes(DRLongInMins + 2 * dX_Matrix[1]);
 
   return { lat, lon };
 };
@@ -227,11 +226,11 @@ export const convertMinutesToDMSFromMinutes = (minuets: number) => {
     degreesAndMinutesArray[1],
     1
   );
-  let seconds_RoundTo2 = minutesAndSecondsArray[1] * 60;
+  let seconds_RoundTo4 = minutesAndSecondsArray[1] * 60;
   return {
     dgr: degreesAndMinutesArray[0],
     mins: minutesAndSecondsArray[0],
-    seconds_RoundTo2,
+    seconds_RoundTo4,
     isDirectionNorthOrEast,
   };
 };
@@ -276,11 +275,10 @@ export const findPsiAngle = (firstLambda_RoundTo6: number, N1_Matrix: any) => {
 };
 
 export const calculateDiscrepancyAngleAndValue = (dX_Matrix: any) => {
-  let angle_RoundTo1 = Math.atan(dX_Matrix[1] / dX_Matrix[0]) * (180 / Math.PI);
+  let angle_RoundTo1 = radiansToDgr(
+    atanNavigational(dX_Matrix[1], dX_Matrix[0])
+  );
 
-  if (angle_RoundTo1 < 0) {
-    angle_RoundTo1 = angle_RoundTo1 + 180;
-  }
   let value_RoundTo6 = Math.sqrt(dX_Matrix[0] ** 2 + dX_Matrix[1] ** 2);
   return {
     angle_RoundTo1,
@@ -309,7 +307,6 @@ export const calculatePosterioriN_Matrix = (
   N_Matrix: math.Matrix
 ) => {
   let VtD1V = multiply(transposedVAndInvertedD_Matrix, V_Matrix);
-  console.log(VtD1V);
   return multiply(VtD1V, N_Matrix);
 };
 
@@ -468,12 +465,42 @@ export const calculateIterationData = (
   let invertedN_Matrix = toInverseN_Matrix(N_Matrix);
   let N1_Matrix = createN1_Matrix(invertedN_Matrix);
   let dX_Matrix = createDeltaX_Matrix(invertedN_Matrix, ADU_Matrix);
-  let compassError_RoundTo6 = calculateCompassError(dX_Matrix);
-  let finalObservedCoordinates = calculateObservedCoordinates(
-    dX_Matrix,
-    { dgr: +data.DRLatDGR, mins: +data.DRLatMins, dir: data.DRLatDir },
-    { dgr: +data.DRLongDGR, mins: +data.DRLongMins, dir: data.DRLongDir }
-  );
+  let compassError_RoundTo6 =
+    whatIteration === "First Iteration"
+      ? calculateCompassError(dX_Matrix)
+      : calculateCompassError(dX_Matrix) +
+        calculateCompassError(dX_MatrixAfterFirstIteration);
+
+  let finalObservedCoordinates = {
+    lat: {
+      dgr: 0,
+      mins: 0,
+      seconds_RoundTo4: 0,
+      isDirectionNorthOrEast: false,
+    },
+    lon: {
+      dgr: 0,
+      mins: 0,
+      seconds_RoundTo4: 0,
+      isDirectionNorthOrEast: false,
+    },
+  };
+  if (whatIteration === "First Iteration") {
+    finalObservedCoordinates = calculateObservedCoordinates(
+      dX_Matrix,
+      { dgr: +data.DRLatDGR, mins: +data.DRLatMins, dir: data.DRLatDir },
+      { dgr: +data.DRLongDGR, mins: +data.DRLongMins, dir: data.DRLongDir }
+    );
+  }
+  if (whatIteration === "Second Iteration") {
+    finalObservedCoordinates = calculateObservedCoordinates(
+      dX_Matrix,
+      { dgr: +data.DRLatDGR, mins: +data.DRLatMins, dir: data.DRLatDir },
+      { dgr: +data.DRLongDGR, mins: +data.DRLongMins, dir: data.DRLongDir },
+      dX_MatrixAfterFirstIteration
+    );
+  }
+
   let prioriErrors = calculatePrioriErrors(N1_Matrix);
   let psiAngle = findPsiAngle(prioriErrors.firstLambda_RoundTo6, N1_Matrix);
   let psiAngleAndRadialErrorArr_Formula = [
@@ -501,6 +528,13 @@ export const calculateIterationData = (
     `= ${posterioriPsiAngle.toFixed(2)} °`,
     `= ${posterioriErrorsObj.radialError_RoundTo1.toFixed(2)} м`,
   ];
+  // let xTest = -1;
+  // let yTest = -1;
+
+  // console.log(
+  //   radiansToDgr(atanNavigational(xTest, yTest)),
+  //   radiansToDgr(Math.atan2(xTest, yTest))
+  // );
 
   let dataForIterationObject = {
     initialValues: {
@@ -650,6 +684,8 @@ function roundObject_RoundToValues(
           roundValues(obj[key]);
         } else if (typeof obj[key] === "number" && key.includes("_RoundTo6")) {
           obj[key] = +obj[key].toFixed(6);
+        } else if (typeof obj[key] === "number" && key.includes("_RoundTo4")) {
+          obj[key] = +obj[key].toFixed(4);
         } else if (typeof obj[key] === "number" && key.includes("_RoundTo2")) {
           obj[key] = +obj[key].toFixed(2);
         } else if (typeof obj[key] === "number" && key.includes("_RoundTo1")) {
@@ -666,4 +702,13 @@ function roundObject_RoundToValues(
 export const roundIterationObjectValues = (data: DisplayingCalculatedData) => {
   let matrixesRounded = roundIterationObject_MatrixValues(data);
   return roundObject_RoundToValues(matrixesRounded);
+};
+
+export const atanNavigational = (x: number, y: number) => {
+  let angle = Math.atan(x / y);
+  if (x > 0 && y > 0) angle = Math.abs(angle);
+  if (x > 0 && y < 0) angle = Math.PI - Math.abs(angle);
+  if (x < 0 && y < 0) angle = Math.PI + Math.abs(angle);
+  if (x < 0 && y > 0) angle = 2 * Math.PI - Math.abs(angle);
+  return angle;
 };
