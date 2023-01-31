@@ -1,5 +1,26 @@
 import "./App.css";
 
+import distance_img from "./images/graph/distance.png";
+import gradientDir_img from "./images/graph/gradientDir.png";
+import gradientValue_img from "./images/graph/gradientValue.png";
+import navParamDiff_img from "./images/graph/navParamDiff.png";
+import transfer_img from "./images/graph/transfer.png";
+import SDLoP_img from "./images/graph/SDLoP.png";
+import theta_img from "./images/graph/theta.png";
+import t12_img from "./images/graph/t12.png";
+import t13_img from "./images/graph/t13.png";
+import t14_img from "./images/graph/t14.png";
+import t23_img from "./images/graph/t23.png";
+import t24_img from "./images/graph/t24.png";
+import t34_img from "./images/graph/t34.png";
+import SDIntersection_img from "./images/graph/SDIntersection.png";
+import SDIntersection12_img from "./images/graph/SDIntersection12.png";
+import SDIntersection13_img from "./images/graph/SDIntersection13.png";
+import SDIntersection14_img from "./images/graph/SDIntersection14.png";
+import SDIntersection23_img from "./images/graph/SDIntersection23.png";
+import SDIntersection24_img from "./images/graph/SDIntersection24.png";
+import SDIntersection34_img from "./images/graph/SDIntersection34.png";
+
 import NavItem from "../src/components/NavItem";
 
 import Box from "@mui/material/Box";
@@ -19,6 +40,8 @@ import {
   longObject,
   calculateIterationData,
   roundIterationObjectValues,
+  calculateGraphicMethodData,
+  GraphicData,
 } from "./functions";
 import { useState } from "react";
 import { MathType, round } from "mathjs";
@@ -33,6 +56,8 @@ import {
 } from "@mui/material";
 
 import IterationData from "./components/IterationData";
+import ImageWithValue from "./components/ImageWithValue";
+import GraphTable from "./components/GraphTable";
 
 export interface inputData {
   DRLatDGR: number;
@@ -253,6 +278,10 @@ function App() {
   const [dataForSecondIteration, setDataForSecondIteration] =
     useState<any>(undefined);
 
+  const [dataForGraphicMethod, setDataForGraphicMethod] = useState<
+    GraphicData | undefined
+  >(undefined);
+
   const onSubmit = (data: any) => {
     let dataForFirstIterationObject = calculateIterationData(
       data,
@@ -273,9 +302,13 @@ function App() {
       dataForSecondIterationObject
     );
     setDataForSecondIteration(dataForSecondIterationRoundedObject);
+    //
+    let graphicMethodData = calculateGraphicMethodData(
+      dataForFirstIterationObject
+    );
+
+    setDataForGraphicMethod(roundIterationObjectValues(graphicMethodData));
   };
-  // console.log(Object.keys(JSON.parse(JSON.stringify(dataForFirstIteration))));
-  // console.log(Object.keys(JSON.parse(JSON.stringify(dataForSecondIteration))));
 
   return (
     <div className="App">
@@ -372,7 +405,7 @@ function App() {
 
         <ButtonCard>
           <Button type="submit" onClick={onSubmit}>
-            Вычислить
+            =
           </Button>
         </ButtonCard>
       </form>
@@ -533,15 +566,103 @@ function App() {
             </Table>
           </TableContainer>
 
-          <IterationData
+          {/* <IterationData
             dataForIteration={dataForFirstIteration}
             isFirstIteration={true}
           />
           <IterationData
             dataForIteration={dataForSecondIteration}
             isFirstIteration={false}
-          />
+          /> */}
         </Box>
+      )}
+      <Typography variant="h3" mt={2} mb={3}>
+        Графоаналитический метод
+      </Typography>
+      {dataForGraphicMethod && (
+        <div>
+          <h5>Рассчитаем параметры для построения ЛП</h5>
+          <div className="container">
+            <ImageWithValue
+              imageUrl={distance_img}
+              formula_oneDimensionArray={dataForGraphicMethod.distancesSet_MRoundTo2.map(
+                (item) => `${item} '`
+              )}
+              withoutMatrixBorder
+            />
+            <ImageWithValue
+              imageUrl={gradientDir_img}
+              formula_oneDimensionArray={dataForGraphicMethod.gradientDirection_MRoundTo2.map(
+                (item) => `${item} °`
+              )}
+              withoutMatrixBorder
+            />
+          </div>
+
+          <div className="container">
+            <ImageWithValue
+              imageUrl={gradientValue_img}
+              formula_oneDimensionArray={dataForGraphicMethod.gradientValue_MRoundTo2.map(
+                (item) => `${item} [°/м миля]`
+              )}
+              withoutMatrixBorder
+            />
+            <ImageWithValue
+              imageUrl={navParamDiff_img}
+              formula_oneDimensionArray={dataForGraphicMethod.navParameterDiff_MRoundTo2.map(
+                (item) => `${item} °`
+              )}
+              withoutMatrixBorder
+            />
+          </div>
+          <div className="container">
+            <ImageWithValue
+              imageUrl={transfer_img}
+              formula_oneDimensionArray={dataForGraphicMethod.transferDistances_MRoundTo2.map(
+                (item) => `${item} '`
+              )}
+              withoutMatrixBorder
+            />
+            <ImageWithValue
+              imageUrl={SDLoP_img}
+              formula_oneDimensionArray={dataForGraphicMethod.LoPStandardDeviation_MRoundTo2.map(
+                (item) => `${item} '`
+              )}
+              withoutMatrixBorder
+            />
+          </div>
+          <GraphTable
+            formulImageClassName="SDIntersection"
+            dataObj1={dataForGraphicMethod.thetaAngleObj}
+            formula_img={theta_img}
+            imageClassName="theta"
+            innerImagesArr={[
+              t12_img,
+              t13_img,
+              t14_img,
+              t23_img,
+              t24_img,
+              t34_img,
+            ]}
+          />
+          <h5>Вычислим СКП каждой точки пересечения двух линий положения </h5>
+          <GraphTable
+            formulImageClassName="SDIntersection"
+            dataObj6={
+              dataForGraphicMethod.standardDeviationForIntersectionPoint
+            }
+            formula_img={SDIntersection_img}
+            imageClassName="SDIntersection"
+            innerImagesArr={[
+              SDIntersection12_img,
+              SDIntersection13_img,
+              SDIntersection14_img,
+              SDIntersection23_img,
+              SDIntersection24_img,
+              SDIntersection34_img,
+            ]}
+          />
+        </div>
       )}
     </div>
   );

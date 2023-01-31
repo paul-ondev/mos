@@ -8,7 +8,6 @@ import {
   multiply,
   range,
   round,
-  sec,
   subset,
   subtract,
   transpose,
@@ -32,6 +31,34 @@ export interface longObject {
   dgr: number;
   mins: number;
   dir: longDirection;
+}
+
+export type IntersectionProperty_RoundTo1 = {
+  LoP_12_Intersection_RoundTo1: number;
+  LoP_13_Intersection_RoundTo1: number;
+  LoP_14_Intersection_RoundTo1: number;
+  LoP_23_Intersection_RoundTo1: number;
+  LoP_24_Intersection_RoundTo1: number;
+  LoP_34_Intersection_RoundTo1: number;
+};
+export type IntersectionProperty_RoundTo6 = {
+  LoP_12_Intersection_RoundTo6: number;
+  LoP_13_Intersection_RoundTo6: number;
+  LoP_14_Intersection_RoundTo6: number;
+  LoP_23_Intersection_RoundTo6: number;
+  LoP_24_Intersection_RoundTo6: number;
+  LoP_34_Intersection_RoundTo6: number;
+};
+export interface GraphicData {
+  distancesSet_MRoundTo2: number[];
+  gradientDirection_MRoundTo2: number[];
+  gradientValue_MRoundTo2: number[];
+  navParameterDiff_MRoundTo2: number[];
+  transferDistances_MRoundTo2: number[];
+  LoPStandardDeviation_MRoundTo2: number[];
+  thetaAngleObj: IntersectionProperty_RoundTo1;
+  standardDeviationForIntersectionPoint: IntersectionProperty_RoundTo6;
+  weights: IntersectionProperty_RoundTo6;
 }
 
 export function latDiff(observedLat: latObject, DRLat: latObject) {
@@ -528,79 +555,72 @@ export const calculateIterationData = (
     `= ${posterioriPsiAngle.toFixed(2)} °`,
     `= ${posterioriErrorsObj.radialError_RoundTo1.toFixed(2)} м`,
   ];
-  // let xTest = -1;
-  // let yTest = -1;
-
-  // console.log(
-  //   radiansToDgr(atanNavigational(xTest, yTest)),
-  //   radiansToDgr(Math.atan2(xTest, yTest))
-  // );
 
   let dataForIterationObject = {
     initialValues: {
       DRPosition: {
         lat: {
-          dgr: data.DRLatDGR,
-          mins: data.DRLatMins,
+          dgr: +data.DRLatDGR,
+          mins: +data.DRLatMins,
           dir: data.DRLatDir,
         },
         long: {
-          dgr: data.DRLongDGR,
-          mins: data.DRLongMins,
+          dgr: +data.DRLongDGR,
+          mins: +data.DRLongMins,
           dir: data.DRLongDir,
         },
       },
       first: {
         lat: {
-          dgr: data.orientNumber1LatDGR,
-          mins: data.orientNumber1LatMins,
+          dgr: +data.orientNumber1LatDGR,
+          mins: +data.orientNumber1LatMins,
           dir: data.orientNumber1LatDir,
         },
         long: {
-          dgr: data.orientNumber1LongDGR,
-          mins: data.orientNumber1LongMins,
+          dgr: +data.orientNumber1LongDGR,
+          mins: +data.orientNumber1LongMins,
           dir: data.orientNumber1LongDir,
         },
-        bearing: data.orientNumber1Bearing,
+        bearing: +data.orientNumber1Bearing,
       },
       second: {
         lat: {
-          dgr: data.orientNumber2LatDGR,
-          mins: data.orientNumber2LatMins,
+          dgr: +data.orientNumber2LatDGR,
+          mins: +data.orientNumber2LatMins,
           dir: data.orientNumber2LatDir,
         },
         long: {
-          dgr: data.orientNumber2LongDGR,
-          mins: data.orientNumber2LongMins,
+          dgr: +data.orientNumber2LongDGR,
+          mins: +data.orientNumber2LongMins,
           dir: data.orientNumber2LongDir,
         },
-        bearing: data.orientNumber2Bearing,
+        bearing: +data.orientNumber2Bearing,
       },
       third: {
         lat: {
-          dgr: data.orientNumber3LatDGR,
-          mins: data.orientNumber3LatMins,
+          dgr: +data.orientNumber3LatDGR,
+          mins: +data.orientNumber3LatMins,
           dir: data.orientNumber3LatDir,
         },
         long: {
-          dgr: data.orientNumber3LongDGR,
-          mins: data.orientNumber3LongMins,
+          dgr: +data.orientNumber3LongDGR,
+          mins: +data.orientNumber3LongMins,
           dir: data.orientNumber3LongDir,
         },
-        bearing: data.orientNumber3Bearing,
+        bearing: +data.orientNumber3Bearing,
       },
       fourth: {
         lat: {
-          dgr: data.orientNumber4LatDGR,
-          mins: data.orientNumber4LatMins,
+          dgr: +data.orientNumber4LatDGR,
+          mins: +data.orientNumber4LatMins,
           dir: data.orientNumber4LatDir,
         },
         long: {
-          dgr: data.orientNumber4LongDGR,
-          mins: data.orientNumber4LongMins,
+          dgr: +data.orientNumber4LongDGR,
+          mins: +data.orientNumber4LongMins,
           dir: data.orientNumber4LongDir,
         },
-        bearing: data.orientNumber4Bearing,
+        bearing: +data.orientNumber4Bearing,
       },
     },
     latDiff_Matrix: [
@@ -668,13 +688,32 @@ function roundIterationObject_MatrixValues(data: any) {
         roundedData[key] = roundedData[key].toFixed(6);
       }
     }
+    if (key.includes("_MRoundTo2")) {
+      if (Array.isArray(roundedData[key])) {
+        roundedData[key] = roundedData[key].map((val: any) => {
+          if (Array.isArray(val)) {
+            return val.map((nestedVal: any) => {
+              if (typeof nestedVal === "number") return nestedVal.toFixed(2);
+              else if (Array.isArray(nestedVal))
+                return roundIterationObject_MatrixValues(nestedVal);
+              else return nestedVal;
+            });
+          }
+
+          if (typeof val === "number") return val.toFixed(2);
+          else return val;
+        });
+      }
+
+      if (typeof roundedData[key] === "number") {
+        roundedData[key] = roundedData[key].toFixed(2);
+      }
+    }
   });
   return roundedData;
 }
 
-function roundObject_RoundToValues(
-  data: DisplayingCalculatedData
-): DisplayingCalculatedData {
+function roundObject_RoundToValues(data: any) {
   const roundedData = JSON.parse(JSON.stringify(data));
 
   function roundValues(obj: any) {
@@ -699,7 +738,7 @@ function roundObject_RoundToValues(
   return roundedData;
 }
 
-export const roundIterationObjectValues = (data: DisplayingCalculatedData) => {
+export const roundIterationObjectValues = (data: any) => {
   let matrixesRounded = roundIterationObject_MatrixValues(data);
   return roundObject_RoundToValues(matrixesRounded);
 };
@@ -711,4 +750,217 @@ export const atanNavigational = (x: number, y: number) => {
   if (x < 0 && y < 0) angle = Math.PI + Math.abs(angle);
   if (x < 0 && y > 0) angle = 2 * Math.PI - Math.abs(angle);
   return angle;
+};
+// Graphic Method
+const calculateDistance = (latDiff: number, departureDiff: number) => {
+  return Math.sqrt(latDiff ** 2 + departureDiff ** 2);
+};
+
+export const calculateGraphicMethodData = (
+  dataFromFirstIteration: DisplayingCalculatedData
+): GraphicData => {
+  let distancesSet_MRoundTo2 = [
+    calculateDistance(
+      dataFromFirstIteration.latDiff_Matrix[0],
+      dataFromFirstIteration.departureDiff_Matrix[0]
+    ),
+    calculateDistance(
+      dataFromFirstIteration.latDiff_Matrix[1],
+      dataFromFirstIteration.departureDiff_Matrix[1]
+    ),
+    calculateDistance(
+      dataFromFirstIteration.latDiff_Matrix[2],
+      dataFromFirstIteration.departureDiff_Matrix[2]
+    ),
+    calculateDistance(
+      dataFromFirstIteration.latDiff_Matrix[3],
+      dataFromFirstIteration.departureDiff_Matrix[3]
+    ),
+  ];
+
+  let gradientDirection_MRoundTo2 = [
+    radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[0]) < 90
+      ? 360 + radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[0]) - 90
+      : radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[0]) - 90,
+    radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[1]) < 90
+      ? 360 + radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[1]) - 90
+      : radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[1]) - 90,
+    radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[2]) < 90
+      ? 360 + radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[2]) - 90
+      : radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[2]) - 90,
+    radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[3]) < 90
+      ? 360 + radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[3]) - 90
+      : radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[3]) - 90,
+  ];
+
+  let gradientValue_MRoundTo2 = [
+    180 / (Math.PI * distancesSet_MRoundTo2[0]),
+    180 / (Math.PI * distancesSet_MRoundTo2[1]),
+    180 / (Math.PI * distancesSet_MRoundTo2[2]),
+    180 / (Math.PI * distancesSet_MRoundTo2[3]),
+  ];
+
+  let navParameterDiff_MRoundTo2 = [
+    dataFromFirstIteration.initialValues.first.bearing <
+    radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[0])
+      ? 360 +
+        dataFromFirstIteration.initialValues.first.bearing -
+        radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[0])
+      : dataFromFirstIteration.initialValues.first.bearing -
+        radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[0]),
+    dataFromFirstIteration.initialValues.second.bearing <
+    radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[1])
+      ? 360 +
+        dataFromFirstIteration.initialValues.second.bearing -
+        radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[1])
+      : dataFromFirstIteration.initialValues.second.bearing -
+        radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[1]),
+    dataFromFirstIteration.initialValues.third.bearing <
+    radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[2])
+      ? 360 +
+        dataFromFirstIteration.initialValues.third.bearing -
+        radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[2])
+      : dataFromFirstIteration.initialValues.third.bearing -
+        radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[2]),
+    dataFromFirstIteration.initialValues.fourth.bearing <
+    radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[3])
+      ? 360 +
+        dataFromFirstIteration.initialValues.fourth.bearing -
+        radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[3])
+      : dataFromFirstIteration.initialValues.fourth.bearing -
+        radiansToDgr(dataFromFirstIteration.DRBearingsSet_Matrix[3]),
+  ];
+
+  let transferDistances_MRoundTo2 = [
+    navParameterDiff_MRoundTo2[0] / gradientValue_MRoundTo2[0],
+    navParameterDiff_MRoundTo2[1] / gradientValue_MRoundTo2[1],
+    navParameterDiff_MRoundTo2[2] / gradientValue_MRoundTo2[2],
+    navParameterDiff_MRoundTo2[3] / gradientValue_MRoundTo2[3],
+  ];
+
+  let LoPStandardDeviation_MRoundTo2 = [
+    dgrToRadians(0.2) * distancesSet_MRoundTo2[0],
+    dgrToRadians(0.2) * distancesSet_MRoundTo2[1],
+    dgrToRadians(0.2) * distancesSet_MRoundTo2[2],
+    dgrToRadians(0.2) * distancesSet_MRoundTo2[3],
+  ];
+
+  let thetaAngleObj = {
+    LoP_12_Intersection_RoundTo1: calculateThetaAcuteAngle(
+      gradientDirection_MRoundTo2[1],
+      gradientDirection_MRoundTo2[0]
+    ),
+    LoP_13_Intersection_RoundTo1: calculateThetaAcuteAngle(
+      gradientDirection_MRoundTo2[2],
+      gradientDirection_MRoundTo2[0]
+    ),
+    LoP_14_Intersection_RoundTo1: calculateThetaAcuteAngle(
+      gradientDirection_MRoundTo2[3],
+      gradientDirection_MRoundTo2[0]
+    ),
+    LoP_23_Intersection_RoundTo1: calculateThetaAcuteAngle(
+      gradientDirection_MRoundTo2[2],
+      gradientDirection_MRoundTo2[1]
+    ),
+    LoP_24_Intersection_RoundTo1: calculateThetaAcuteAngle(
+      gradientDirection_MRoundTo2[3],
+      gradientDirection_MRoundTo2[1]
+    ),
+    LoP_34_Intersection_RoundTo1: calculateThetaAcuteAngle(
+      gradientDirection_MRoundTo2[3],
+      gradientDirection_MRoundTo2[2]
+    ),
+  };
+
+  let standardDeviationForIntersectionPoint = {
+    LoP_12_Intersection_RoundTo6: calculateStandardDeviationForPoint(
+      thetaAngleObj.LoP_12_Intersection_RoundTo1,
+      LoPStandardDeviation_MRoundTo2[0],
+      LoPStandardDeviation_MRoundTo2[1]
+    ),
+    LoP_13_Intersection_RoundTo6: calculateStandardDeviationForPoint(
+      thetaAngleObj.LoP_13_Intersection_RoundTo1,
+      LoPStandardDeviation_MRoundTo2[0],
+      LoPStandardDeviation_MRoundTo2[2]
+    ),
+    LoP_14_Intersection_RoundTo6: calculateStandardDeviationForPoint(
+      thetaAngleObj.LoP_14_Intersection_RoundTo1,
+      LoPStandardDeviation_MRoundTo2[0],
+      LoPStandardDeviation_MRoundTo2[3]
+    ),
+    LoP_23_Intersection_RoundTo6: calculateStandardDeviationForPoint(
+      thetaAngleObj.LoP_23_Intersection_RoundTo1,
+      LoPStandardDeviation_MRoundTo2[1],
+      LoPStandardDeviation_MRoundTo2[2]
+    ),
+    LoP_24_Intersection_RoundTo6: calculateStandardDeviationForPoint(
+      thetaAngleObj.LoP_24_Intersection_RoundTo1,
+      LoPStandardDeviation_MRoundTo2[1],
+      LoPStandardDeviation_MRoundTo2[3]
+    ),
+    LoP_34_Intersection_RoundTo6: calculateStandardDeviationForPoint(
+      thetaAngleObj.LoP_34_Intersection_RoundTo1,
+      LoPStandardDeviation_MRoundTo2[2],
+      LoPStandardDeviation_MRoundTo2[3]
+    ),
+  };
+
+  let weights = {
+    LoP_12_Intersection_RoundTo6: calculateWeight(
+      standardDeviationForIntersectionPoint.LoP_12_Intersection_RoundTo6
+    ),
+    LoP_13_Intersection_RoundTo6: calculateWeight(
+      standardDeviationForIntersectionPoint.LoP_13_Intersection_RoundTo6
+    ),
+    LoP_14_Intersection_RoundTo6: calculateWeight(
+      standardDeviationForIntersectionPoint.LoP_14_Intersection_RoundTo6
+    ),
+    LoP_23_Intersection_RoundTo6: calculateWeight(
+      standardDeviationForIntersectionPoint.LoP_23_Intersection_RoundTo6
+    ),
+    LoP_24_Intersection_RoundTo6: calculateWeight(
+      standardDeviationForIntersectionPoint.LoP_24_Intersection_RoundTo6
+    ),
+
+    LoP_34_Intersection_RoundTo6: calculateWeight(
+      standardDeviationForIntersectionPoint.LoP_34_Intersection_RoundTo6
+    ),
+  };
+
+  console.log(standardDeviationForIntersectionPoint);
+
+  return {
+    distancesSet_MRoundTo2,
+    gradientDirection_MRoundTo2,
+    gradientValue_MRoundTo2,
+    navParameterDiff_MRoundTo2,
+    transferDistances_MRoundTo2,
+    LoPStandardDeviation_MRoundTo2,
+    thetaAngleObj,
+    standardDeviationForIntersectionPoint,
+    weights,
+  };
+};
+
+function calculateThetaAcuteAngle(dir1: number, dir2: number): number {
+  let angle = Math.abs(dir2 - dir1);
+  if (angle >= 180) {
+    angle = angle - 180 > 90 ? 180 - (angle - 180) : angle - 180;
+  }
+
+  return angle;
+}
+
+const calculateStandardDeviationForPoint = (
+  thetaAngle: number,
+  SD1: number,
+  SD2: number
+) => {
+  let result =
+    (1 / Math.sin(dgrToRadians(thetaAngle))) * Math.sqrt(SD1 ** 2 + SD2 ** 2);
+  return result;
+};
+
+const calculateWeight = (LoP_intersection_SD: number) => {
+  return 1 / LoP_intersection_SD ** 2;
 };
