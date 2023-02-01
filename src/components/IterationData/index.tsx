@@ -45,7 +45,7 @@ export default function IterationData({
   ];
   return (
     <div>
-      <Typography variant="h3" mt={2} mb={3}>
+      <Typography variant="h2" mt={10} mb={5}>
         {isFirstIteration ? "Первая итерация" : "Вторая итерация"}
       </Typography>
 

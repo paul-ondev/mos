@@ -20,6 +20,15 @@ import SDIntersection14_img from "./images/graph/SDIntersection14.png";
 import SDIntersection23_img from "./images/graph/SDIntersection23.png";
 import SDIntersection24_img from "./images/graph/SDIntersection24.png";
 import SDIntersection34_img from "./images/graph/SDIntersection34.png";
+import weight_formula_img from "./images/graph/weight_formula.png";
+import w12_img from "./images/graph/w12.png";
+import w13_img from "./images/graph/w13.png";
+import w14_img from "./images/graph/w14.png";
+import w23_img from "./images/graph/w23.png";
+import w24_img from "./images/graph/w24.png";
+import w34_img from "./images/graph/w34.png";
+import dPhi_dDep_img from "./images/graph/dPhi_dDep.png";
+import weightsSum_img from "./images/graph/weightsSum.png";
 
 import NavItem from "../src/components/NavItem";
 
@@ -313,7 +322,7 @@ function App() {
   return (
     <div className="App">
       <Box sx={{ flexGrow: 0.7, backgroundColor: "rgb(157 143 143 / 60%)" }}>
-        <Typography variant="h3" gutterBottom>
+        <Typography variant="h2" gutterBottom>
           Курсовая работа по МОС
         </Typography>
         <Typography>Введите исходные данные</Typography>
@@ -566,17 +575,17 @@ function App() {
             </Table>
           </TableContainer>
 
-          {/* <IterationData
+          <IterationData
             dataForIteration={dataForFirstIteration}
             isFirstIteration={true}
           />
           <IterationData
             dataForIteration={dataForSecondIteration}
             isFirstIteration={false}
-          /> */}
+          />
         </Box>
       )}
-      <Typography variant="h3" mt={2} mb={3}>
+      <Typography variant="h2" mt={10} mb={5}>
         Графоаналитический метод
       </Typography>
       {dataForGraphicMethod && (
@@ -632,7 +641,7 @@ function App() {
             />
           </div>
           <GraphTable
-            formulImageClassName="SDIntersection"
+            formulaImageClassName="SDIntersection"
             dataObj1={dataForGraphicMethod.thetaAngleObj}
             formula_img={theta_img}
             imageClassName="theta"
@@ -647,7 +656,7 @@ function App() {
           />
           <h5>Вычислим СКП каждой точки пересечения двух линий положения </h5>
           <GraphTable
-            formulImageClassName="SDIntersection"
+            formulaImageClassName="SDIntersection"
             dataObj6={
               dataForGraphicMethod.standardDeviationForIntersectionPoint
             }
@@ -662,6 +671,40 @@ function App() {
               SDIntersection34_img,
             ]}
           />
+          <h5>Вычислим вес каждой точки пересечения двух линий положения </h5>
+
+          <GraphTable
+            formulaImageClassName="weightImg"
+            dataObj6={dataForGraphicMethod.weights}
+            formula_img={weight_formula_img}
+            imageClassName="weightImg"
+            innerImagesArr={[
+              w12_img,
+              w13_img,
+              w14_img,
+              w23_img,
+              w24_img,
+              w34_img,
+            ]}
+          />
+          <div className="container">
+            <ImageWithValue
+              imageClassName="SDIntersection dX_explanation"
+              imageUrl={weightsSum_img}
+              withoutMatrixBorder
+              oneDimensionArr={[dataForGraphicMethod.totalWeight_RoundTo6]}
+            />
+          </div>
+
+          <h5>
+            Вычислим средневзвешенные значения приращений координат относительно
+            счислимой точки. Отшествие и разность широт снимаются с графика.
+          </h5>
+          <ImageWithValue
+            imageClassName="SDIntersection"
+            imageUrl={dPhi_dDep_img}
+            withoutMatrixBorder
+          />
         </div>
       )}
     </div>
@@ -669,3 +712,4 @@ function App() {
 }
 
 export default App;
+// Write TS function that will return summary of all values of given object

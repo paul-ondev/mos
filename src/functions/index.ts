@@ -59,6 +59,7 @@ export interface GraphicData {
   thetaAngleObj: IntersectionProperty_RoundTo1;
   standardDeviationForIntersectionPoint: IntersectionProperty_RoundTo6;
   weights: IntersectionProperty_RoundTo6;
+  totalWeight_RoundTo6: number;
 }
 
 export function latDiff(observedLat: latObject, DRLat: latObject) {
@@ -926,8 +927,7 @@ export const calculateGraphicMethodData = (
       standardDeviationForIntersectionPoint.LoP_34_Intersection_RoundTo6
     ),
   };
-
-  console.log(standardDeviationForIntersectionPoint);
+  let totalWeight_RoundTo6 = summarizeObject(weights);
 
   return {
     distancesSet_MRoundTo2,
@@ -939,6 +939,7 @@ export const calculateGraphicMethodData = (
     thetaAngleObj,
     standardDeviationForIntersectionPoint,
     weights,
+    totalWeight_RoundTo6,
   };
 };
 
@@ -964,3 +965,11 @@ const calculateStandardDeviationForPoint = (
 const calculateWeight = (LoP_intersection_SD: number) => {
   return 1 / LoP_intersection_SD ** 2;
 };
+
+function summarizeObject(obj: any): number {
+  let sum = 0;
+  for (const key in obj) {
+    sum += obj[key];
+  }
+  return sum;
+}

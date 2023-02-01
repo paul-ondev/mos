@@ -11,7 +11,7 @@ type Props = {
   dataObj1?: IntersectionProperty_RoundTo1;
   dataObj6?: IntersectionProperty_RoundTo6;
   imageClassName: string;
-  formulImageClassName: string;
+  formulaImageClassName: string;
 };
 
 const GraphTable = ({
@@ -20,12 +20,12 @@ const GraphTable = ({
   formula_img,
   innerImagesArr,
   imageClassName,
-  formulImageClassName,
+  formulaImageClassName,
 }: Props) => {
   return (
     <div className="container">
       <ImageWithValue
-        imageClassName={formulImageClassName}
+        imageClassName={formulaImageClassName}
         imageUrl={formula_img}
         withoutMatrixBorder
       />
