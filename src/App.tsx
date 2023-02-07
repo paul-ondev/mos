@@ -5,6 +5,7 @@ import gradientDir_img from "./images/graph/gradientDir.png";
 import gradientValue_img from "./images/graph/gradientValue.png";
 import navParamDiff_img from "./images/graph/navParamDiff.png";
 import transfer_img from "./images/graph/transfer.png";
+import reverseBearing_img from "./images/graph/reverseBearing.png";
 import SDLoP_img from "./images/graph/SDLoP.png";
 import theta_img from "./images/graph/theta.png";
 import t12_img from "./images/graph/t12.png";
@@ -325,7 +326,7 @@ function App() {
         <Typography variant="h2" gutterBottom>
           Курсовая работа по МОС
         </Typography>
-        <Typography>Введите исходные данные</Typography>
+        {/* <Typography>Введите исходные данные</Typography> */}
       </Box>
 
       <form onSubmit={handleSubmit(onSubmit)}>
@@ -640,6 +641,13 @@ function App() {
               withoutMatrixBorder
             />
           </div>
+          <ImageWithValue
+            imageUrl={reverseBearing_img}
+            formula_oneDimensionArray={dataForGraphicMethod.reverseBearings_MRoundTo1.map(
+              (item) => `${item} °`
+            )}
+            withoutMatrixBorder
+          />
           <GraphTable
             formulaImageClassName="SDIntersection"
             dataObj1={dataForGraphicMethod.thetaAngleObj}

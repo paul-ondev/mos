@@ -55,6 +55,7 @@ export interface GraphicData {
   gradientValue_MRoundTo2: number[];
   navParameterDiff_MRoundTo2: number[];
   transferDistances_MRoundTo2: number[];
+  reverseBearings_MRoundTo1: number[];
   LoPStandardDeviation_MRoundTo2: number[];
   thetaAngleObj: IntersectionProperty_RoundTo1;
   standardDeviationForIntersectionPoint: IntersectionProperty_RoundTo6;
@@ -710,6 +711,27 @@ function roundIterationObject_MatrixValues(data: any) {
         roundedData[key] = roundedData[key].toFixed(2);
       }
     }
+    if (key.includes("_MRoundTo1")) {
+      if (Array.isArray(roundedData[key])) {
+        roundedData[key] = roundedData[key].map((val: any) => {
+          if (Array.isArray(val)) {
+            return val.map((nestedVal: any) => {
+              if (typeof nestedVal === "number") return nestedVal.toFixed(1);
+              else if (Array.isArray(nestedVal))
+                return roundIterationObject_MatrixValues(nestedVal);
+              else return nestedVal;
+            });
+          }
+
+          if (typeof val === "number") return val.toFixed(1);
+          else return val;
+        });
+      }
+
+      if (typeof roundedData[key] === "number") {
+        roundedData[key] = roundedData[key].toFixed(1);
+      }
+    }
   });
   return roundedData;
 }
@@ -928,6 +950,16 @@ export const calculateGraphicMethodData = (
     ),
   };
   let totalWeight_RoundTo6 = summarizeObject(weights);
+  let reverseBearings_MRoundTo1 = [
+    calculateReverseBearing(dataFromFirstIteration.initialValues.first.bearing),
+    calculateReverseBearing(
+      dataFromFirstIteration.initialValues.second.bearing
+    ),
+    calculateReverseBearing(dataFromFirstIteration.initialValues.third.bearing),
+    calculateReverseBearing(
+      dataFromFirstIteration.initialValues.fourth.bearing
+    ),
+  ];
 
   return {
     distancesSet_MRoundTo2,
@@ -935,6 +967,7 @@ export const calculateGraphicMethodData = (
     gradientValue_MRoundTo2,
     navParameterDiff_MRoundTo2,
     transferDistances_MRoundTo2,
+    reverseBearings_MRoundTo1,
     LoPStandardDeviation_MRoundTo2,
     thetaAngleObj,
     standardDeviationForIntersectionPoint,
@@ -973,3 +1006,13 @@ function summarizeObject(obj: any): number {
   }
   return sum;
 }
+
+const calculateReverseBearing = (trueBearingDgr: number) => {
+  if (trueBearingDgr <= 180) {
+    return trueBearingDgr + 180;
+  }
+  if (trueBearingDgr > 180) {
+    return trueBearingDgr - 180;
+  }
+  return trueBearingDgr;
+};
